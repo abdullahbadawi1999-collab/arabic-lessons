@@ -1,0 +1,11 @@
+{
+  "name": "arabic-lessons",
+  "private": true,
+  "description": "Validation tooling only; the site itself has no build step or runtime dependencies.",
+  "scripts": {
+    "validate": "node scripts/validate.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
+  }
+}

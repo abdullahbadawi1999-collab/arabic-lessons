@@ -5,12 +5,17 @@
 ## هيكل المشروع
 - `index.html`: الصفحة الرئيسية، فيها فهرس الدروس، وبتقرا من `lessons/index.json`.
 - `lesson.html`: المحرّك. بيعرض أي درس عن طريق `lesson.html?id=<اسم الدرس>`، وبيقرا محتواه من `lessons/<اسم الدرس>.json`.
+- `assets/css/app.css`: الشكل كله، ومشترك بين الصفحتين.
+- `assets/js/engine.js`: كود المحرّك اللي بيشغّل `lesson.html`.
 - `lessons/`: ملف محتوى لكل درس، وملف `index.json` فيه الفهرس.
+- `schema/lesson.schema.json`: شكل ملف الدرس.
+- `scripts/validate.mjs`: بيتأكد من ملفات الدروس، وبيشتغل لوحده على GitHub مع كل push.
 - `docs/spec.md`: مواصفات المنصة.
 
 ## إضافة درس جديد
 1. ضيف ملف المحتوى `lessons/<id>.json`، بنفس شكل `ism-alfa3il.json`.
 2. ضيف الدرس في `lessons/index.json`، وخلّي `"ready": true`.
+3. اتأكد إن الملف سليم: `npm install` مرة واحدة، وبعدين `npm run validate`. لو فيه `ERROR` لازم يتصلّح، و`WARN` للتنبيه بس.
 
 ## التشغيل محليًا
 الصفحات بتقرا ملفات JSON، فلازم تتفتح من سيرفر، مش بالدبل كليك:

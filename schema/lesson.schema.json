@@ -1,0 +1,185 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://abdullahbadawi1999-collab.github.io/arabic-lessons/schema/lesson.schema.json",
+  "title": "ملف محتوى درس (lessons/<id>.json)",
+  "description": "شكل ملف الدرس اللي بيقراه lesson.html. القواعد اللي محتاجة مقارنة بين أكتر من حقل (زي tag ليه reserve، ومفيش اختيارات مكررة) في scripts/validate.mjs.",
+  "type": "object",
+  "required": ["id", "title", "grade", "unit", "discover", "drill"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "نفس اسم الملف من غير .json" },
+    "title": { "$ref": "#/$defs/text" },
+    "grade": { "$ref": "#/$defs/text" },
+    "unit": { "$ref": "#/$defs/text" },
+    "discover": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/stage" }
+    },
+    "summaryExtra": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ruleScreen" }
+    },
+    "drill": { "$ref": "#/$defs/drill" }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1 },
+    "optionalText": { "type": ["string", "null"], "minLength": 1 },
+    "examples": {
+      "type": ["array", "null"],
+      "items": { "$ref": "#/$defs/text" }
+    },
+
+    "stage": {
+      "type": "object",
+      "required": ["stage", "screens"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "$ref": "#/$defs/text" },
+        "screens": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/screen" }
+        }
+      }
+    },
+    "screen": {
+      "type": "object",
+      "required": ["type"],
+      "properties": { "type": { "enum": ["info", "q", "rule"] } },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "info" } } }, "then": { "$ref": "#/$defs/infoScreen" } },
+        { "if": { "properties": { "type": { "const": "q" } } }, "then": { "$ref": "#/$defs/qScreen" } },
+        { "if": { "properties": { "type": { "const": "rule" } } }, "then": { "$ref": "#/$defs/ruleScreen" } }
+      ]
+    },
+    "infoScreen": {
+      "type": "object",
+      "required": ["type", "title"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "info" },
+        "title": { "$ref": "#/$defs/text" },
+        "body": { "$ref": "#/$defs/optionalText" },
+        "example": { "$ref": "#/$defs/examples" }
+      }
+    },
+    "qScreen": {
+      "type": "object",
+      "required": ["type", "prompt", "options"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "q" },
+        "prompt": { "$ref": "#/$defs/text" },
+        "body": { "$ref": "#/$defs/optionalText" },
+        "example": { "$ref": "#/$defs/examples" },
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["t", "ok", "fb"],
+            "additionalProperties": false,
+            "properties": {
+              "t": { "$ref": "#/$defs/text" },
+              "ok": { "type": "boolean" },
+              "fb": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "after": { "$ref": "#/$defs/optionalText" }
+      }
+    },
+    "ruleScreen": {
+      "type": "object",
+      "required": ["type", "title", "lines"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "rule" },
+        "title": { "$ref": "#/$defs/text" },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+
+    "drill": {
+      "type": "object",
+      "required": ["unlockScore", "tags", "groups", "reserve"],
+      "additionalProperties": false,
+      "properties": {
+        "unlockScore": { "type": "integer", "minimum": 1 },
+        "tags": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "$ref": "#/$defs/tagName" },
+          "additionalProperties": { "$ref": "#/$defs/text" }
+        },
+        "groups": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/group" }
+        },
+        "reserve": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/tagName" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/question" }
+          }
+        }
+      }
+    },
+    "tagName": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "group": {
+      "type": "object",
+      "required": ["id", "level", "title", "desc", "showRule", "questions"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
+        "level": { "enum": ["سهل", "متوسط", "صعب"] },
+        "title": { "$ref": "#/$defs/text" },
+        "desc": { "$ref": "#/$defs/text" },
+        "showRule": { "type": "boolean" },
+        "questions": {
+          "type": "array",
+          "minItems": 15,
+          "maxItems": 15,
+          "items": { "$ref": "#/$defs/question" }
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": ["id", "tag", "kind", "stem", "options", "answer", "explain"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+        "tag": { "$ref": "#/$defs/tagName" },
+        "kind": { "$ref": "#/$defs/text" },
+        "stem": { "$ref": "#/$defs/text" },
+        "sentence": { "$ref": "#/$defs/optionalText" },
+        "options": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["t", "fb"],
+            "additionalProperties": false,
+            "properties": {
+              "t": { "$ref": "#/$defs/text" },
+              "fb": { "$ref": "#/$defs/optionalText" }
+            }
+          }
+        },
+        "answer": { "type": "integer", "minimum": 0, "maximum": 3 },
+        "rule": { "$ref": "#/$defs/optionalText" },
+        "explain": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}
