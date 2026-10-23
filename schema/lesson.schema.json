@@ -12,6 +12,20 @@
     "title": { "$ref": "#/$defs/text" },
     "grade": { "$ref": "#/$defs/text" },
     "unit": { "$ref": "#/$defs/text" },
+    "pattern": {
+      "description": "الوزن اللي بيظهر في الصفحة الأولى للدرس. لو مش موجود مفيش وزن بيظهر. وزن واحد بيتعرض حرف حرف، والحرف اللي بين {} بيتلوّن. أكتر من وزن بيتعرضوا بطاقات.",
+      "type": "object",
+      "required": ["weights"],
+      "additionalProperties": false,
+      "properties": {
+        "weights": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/text" }
+        },
+        "caption": { "$ref": "#/$defs/text" }
+      }
+    },
     "discover": {
       "type": "array",
       "minItems": 1,

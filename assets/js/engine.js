@@ -42,16 +42,28 @@ function ruleCard(r, i){
 function render(html){ app.innerHTML = html; window.scrollTo({ top: 0 }); const f = app.querySelector("[data-focus]"); if (f) f.focus({ preventScroll: true }); }
 
 /* ---------- الرئيسية ---------- */
+// وزن واحد: كل حرف (بحركته) في مربع، والحرف اللي بين {} ملوّن. أكتر من وزن: كل وزن في بطاقة.
+function patternBlock(p){
+  if (!p || !p.weights || !p.weights.length) return "";
+  const many = p.weights.length > 1;
+  let z = false;
+  const tiles = w => (w.match(/[{}]|\P{M}\p{M}*/gu) || []).map(g => {
+    if (g === "{" || g === "}") { z = g === "{"; return ""; }
+    return g.trim() ? `<span${z ? ' class="z"' : ""}>${esc(g)}</span>` : "";
+  }).join("");
+  const label = (many ? "أوزان " : "وزن ") + p.weights.map(w => w.replace(/[{}]/g, "")).join("، ");
+  return `<div class="pattern${many ? " many" : ""}" role="img" aria-label="${esc(label)}">
+      ${many ? p.weights.map(w => `<span>${md(w)}</span>`).join("") : tiles(p.weights[0])}
+    </div>
+    ${p.caption ? `<div class="pattern-cap">${md(p.caption)}</div>` : ""}`;
+}
 function home(){
   const doneG = groups.filter(g => (P.groups[g.id] || {}).best >= L.drill.unlockScore).length;
   render(`
   <div class="hero enter">
     <div class="unit">${esc(L.unit)} · ${esc(L.grade)}</div>
     <h1>${esc(L.title)}</h1>
-    <div class="pattern" aria-label="وزن فاعل: الألف حرف زائد">
-      <span>ف</span><span class="z">ا</span><span>ع</span><span>ل</span>
-    </div>
-    <div class="pattern-cap">الحرف الملوّن هو الحرف الزايد… وده اللي هتكتشفه بنفسك.</div>
+    ${patternBlock(L.pattern)}
   </div>
   <div class="tiles">
     <button class="tile" data-act="discover" data-focus>

@@ -118,6 +118,8 @@ strong{font-weight:700;color:var(--brand)}
 .pattern{display:flex;gap:8px;margin:18px 0 6px;direction:rtl}
 .pattern span{font-family:var(--ar);font-size:34px;font-weight:700;width:58px;height:66px;border-radius:14px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);line-height:1}
 .pattern span.z{color:var(--coral);border-color:var(--coral);background:var(--rose-soft)}
+.pattern.many{flex-wrap:wrap}
+.pattern.many span{width:auto;height:54px;padding:0 14px;font-size:26px}
 .pattern-cap{font-size:13.5px;color:var(--muted)}
 .tiles{display:grid;gap:12px;margin-top:22px}
 .tile{display:flex;align-items:center;gap:14px;text-align:start;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;box-shadow:var(--shadow)}
