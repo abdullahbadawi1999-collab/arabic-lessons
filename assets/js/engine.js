@@ -17,9 +17,12 @@ const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { c
 const LV = { "سهل": "lv-easy", "متوسط": "lv-med", "صعب": "lv-hard" };
 
 /* ---------- حفظ التقدم (اختياري) ---------- */
-const KEY = "lesson:" + L.id + ":v1";
-let P = { discoverDone: false, discoverAt: 0, groups: {}, tags: {}, teacher: false };
+// وضع المعلم من الرابط بس (?teacher=1): بيفتح كل المجموعات، وبيحفظ في مفتاح لوحده عشان مايلمسش تقدّم الطالب على نفس الجهاز.
+const TEACHER = new URLSearchParams(location.search).get("teacher") === "1";
+const KEY = "lesson:" + L.id + (TEACHER ? ":teacher" : "") + ":v1";
+let P = { discoverDone: false, discoverAt: 0, groups: {}, tags: {} };
 try { const raw = localStorage.getItem(KEY); if (raw) P = Object.assign(P, JSON.parse(raw)); } catch (e) {}
+delete P.teacher; // كان بيتحفظ من زرار وضع المعلم القديم
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
 
 /* ---------- الاكتشاف: تسطيح الشاشات ---------- */
@@ -27,7 +30,7 @@ const FLAT = [];
 L.discover.forEach(st => st.screens.forEach(sc => FLAT.push(Object.assign({ stage: st.stage }, sc))));
 const RULES = FLAT.filter(s => s.type === "rule");
 const groups = L.drill.groups;
-const isUnlocked = i => P.teacher || i === 0 || ((P.groups[groups[i - 1].id] || {}).best || 0) >= L.drill.unlockScore;
+const isUnlocked = i => TEACHER || i === 0 || ((P.groups[groups[i - 1].id] || {}).best || 0) >= L.drill.unlockScore;
 
 /* ---------- عناصر مشتركة ---------- */
 function topbar(title, sub, back){
@@ -81,7 +84,7 @@ function home(){
       <span class="tx"><b>الملخص</b><span>كل القواعد في مكان واحد</span></span>
     </button>
   </div>
-  <div class="foot" style="gap:16px;flex-wrap:wrap"><a class="link" href="./">كل الدروس</a><button class="link" data-act="teacher">${P.teacher ? "وضع المعلم شغّال: كل المجموعات مفتوحة (اقفله)" : "وضع المعلم: افتح كل المجموعات"}</button></div>`);
+  <div class="foot" style="gap:16px;flex-wrap:wrap"><a class="link" href="./${TEACHER ? "?teacher=1" : ""}">كل الدروس</a>${TEACHER ? `<a class="link" href="lesson.html?id=${encodeURIComponent(L.id)}">وضع المعلم شغّال: كل المجموعات مفتوحة (اقفله)</a>` : ""}</div>`);
 }
 
 /* ---------- الاكتشاف ---------- */
@@ -299,7 +302,6 @@ app.addEventListener("click", e => {
   else if (a === "qnext") qNext();
   else if (a === "rstart") { Z.i++; question(); }
   else if (a === "rskip") finishGroup();
-  else if (a === "teacher") { P.teacher = !P.teacher; save(); home(); }
 });
 document.addEventListener("keydown", e => {
   if (e.altKey || e.ctrlKey || e.metaKey) return;

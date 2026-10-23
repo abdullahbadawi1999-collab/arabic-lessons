@@ -19,9 +19,10 @@
 <script>
 const AR="٠١٢٣٤٥٦٧٨٩",ar=n=>String(n).replace(/\d/g,d=>AR[d]);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const T=new URLSearchParams(location.search).get("teacher")==="1"?"&amp;teacher=1":"";
 fetch("lessons/index.json",{cache:"no-cache"}).then(r=>r.json()).then(c=>{
   document.getElementById("list").innerHTML=c.years.map(y=>`<section class="year"><h2>${esc(y.name)}</h2>${y.units.map(u=>`<div class="unitname">${esc(u.name)}</div>${u.lessons.map((l,i)=>l.ready
-    ?`<a class="lesson" href="lesson.html?id=${encodeURIComponent(l.id)}"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span><span class="go">ابدأ ←</span></a>`
+    ?`<a class="lesson" href="lesson.html?id=${encodeURIComponent(l.id)}${T}"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span><span class="go">ابدأ ←</span></a>`
     :`<div class="lesson soon"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span></div>`).join("")}`).join("")}</section>`).join("");
 }).catch(()=>{document.getElementById("list").innerHTML='<p class="note">مقدرناش نحمّل قايمة الدروس. حدّث الصفحة.</p>';});
 </script>
