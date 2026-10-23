@@ -17,8 +17,14 @@
       {
        "id": "ism-almaf3ol",
        "title": "اسم المفعول",
-       "desc": "قريبًا",
-       "ready": false
+       "desc": "اكتشف القاعدة + ٣ مجموعات تدريب",
+       "ready": true
+      },
+      {
+       "id": "siyagh-almubalagha",
+       "title": "صيغ المبالغة",
+       "desc": "اكتشف القاعدة + ٣ مجموعات تدريب",
+       "ready": true
       }
      ]
     }
