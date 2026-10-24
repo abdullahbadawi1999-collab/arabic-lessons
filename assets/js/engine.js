@@ -16,12 +16,10 @@ function md(s){
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 
 /* ---------- حفظ التقدم (اختياري) ---------- */
-// وضع المعلم من الرابط بس (?teacher=1): بيفتح كل المجموعات، وبيحفظ في مفتاح لوحده عشان مايلمسش تقدّم الطالب على نفس الجهاز.
-const TEACHER = new URLSearchParams(location.search).get("teacher") === "1";
-const KEY = "lesson:" + L.id + (TEACHER ? ":teacher" : "") + ":v1";
+const KEY = "lesson:" + L.id + ":v1";
 let P = { discoverDone: false, discoverAt: 0, groups: {}, tags: {} };
 try { const raw = localStorage.getItem(KEY); if (raw) P = Object.assign(P, JSON.parse(raw)); } catch (e) {}
-delete P.teacher; // كان بيتحفظ من زرار وضع المعلم القديم
+delete P.teacher; // كان بيتحفظ من وضع المعلم القديم
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) {} };
 
 /* ---------- الاكتشاف: تسطيح الشاشات ---------- */
@@ -29,9 +27,8 @@ const FLAT = [];
 L.discover.forEach(st => st.screens.forEach(sc => FLAT.push(Object.assign({ stage: st.stage }, sc))));
 const RULES = FLAT.filter(s => s.type === "rule");
 const groups = L.drill.groups;
-// حد فتح المجموعة اللي بعدها: بتاع المجموعة نفسها، ولو مش موجود drill.unlockScore
+// الدرجة اللي الطالب بيعدّي بيها المجموعة: بتاع المجموعة نفسها، ولو مش موجود drill.unlockScore. كل المجموعات مفتوحة دايمًا.
 const unlockOf = g => g.unlockScore ?? L.drill.unlockScore;
-const isUnlocked = i => TEACHER || i === 0 || ((P.groups[groups[i - 1].id] || {}).best || 0) >= unlockOf(groups[i - 1]);
 // لون المجموعة: مجموعات التعلّم بالترتيب أخضر ثم أصفر ثم لون الـ brand، واللي من غير قاعدة (showRule: false) بلون الصعب
 let learnN = 0;
 const LV = new Map(groups.map(g => [g, g.showRule ? (["lv-easy", "lv-med"][learnN++] || "lv-brand") : "lv-hard"]));
@@ -88,7 +85,7 @@ function home(){
       <span class="tx"><b>الملخص</b><span>كل القواعد في مكان واحد</span></span>
     </button>
   </div>
-  <div class="foot" style="gap:16px;flex-wrap:wrap"><a class="link" href="./${TEACHER ? "?teacher=1" : ""}">كل الدروس</a>${TEACHER ? `<a class="link" href="lesson.html?id=${encodeURIComponent(L.id)}">وضع المعلم شغّال: كل المجموعات مفتوحة (اقفله)</a>` : ""}</div>`);
+  <div class="foot"><a class="btn" href="./">→ العودة للرئيسية</a></div>`);
 }
 
 /* ---------- الاكتشاف ---------- */
@@ -157,13 +154,13 @@ function discoverEnd(){
 /* ---------- المجموعات ---------- */
 function groupsView(){
   render(`${topbar(L.title, "التدريبات")}
-    <div class="meta"><span>${TEACHER ? "وضع المعلم: كل المجموعات مفتوحة" : "المجموعات بتتفتح بالترتيب"}</span></div>
+    <div class="meta"><span>تقدر تبدأ بأي مجموعة</span></div>
     ${groups.map((g, i) => {
-      const st = P.groups[g.id] || {}; const open = isUnlocked(i), prev = groups[i - 1];
-      return `<button class="grp enter ${LV.get(g)}" data-grp="${i}" ${open ? "" : "disabled"} ${i === 0 ? "data-focus" : ""}>
+      const st = P.groups[g.id] || {};
+      return `<button class="grp enter ${LV.get(g)}" data-grp="${i}" ${i === 0 ? "data-focus" : ""}>
         <span class="lv"></span>
-        <span class="tx"><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span>${open ? "" : `<span class="goal">بتتفتح لما تجيب ${ar(unlockOf(prev))} من ${ar(prev.questions.length)} في «${esc(prev.level)}»</span>`}</span>
-        <span class="sc">${open ? (st.best != null ? `${ar(st.best)}/${ar(g.questions.length)}<em>أحسن نتيجة</em>` : `<em>ابدأ</em>`) : `<em>مقفولة</em>`}</span>
+        <span class="tx"><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span></span>
+        <span class="sc">${st.best != null ? `${ar(st.best)}/${ar(g.questions.length)}<em>أحسن نتيجة</em>` : `<em>ابدأ</em>`}</span>
       </button>`;
     }).join("")}`);
 }
@@ -191,10 +188,16 @@ function question(){
       <div class="kind">${esc(q.kind)}</div>
       <div class="stem">${md(q.stem)}</div>
       ${q.sentence ? `<div class="sentence">${md(q.sentence)}</div>` : ""}
-      <div class="opts ${q.options.every(o => o.t.length < 16) ? "two" : ""}">${Z.order.map((k, n) => `<button class="opt" data-qopt="${k}" ${n === 0 ? "data-focus" : ""}><span class="n">${ar(n + 1)}</span><span class="t">${md(q.options[k].t)}</span></button>`).join("")}</div>
+      <div id="qopts"><p class="note reveal-note">فكّر في الإجابة لوحدك الأول، وبعدين اعرض الخيارات.</p><div class="actions"><button class="btn" data-act="reveal" data-focus>اعرض الخيارات</button></div></div>
       <div id="qfb"></div>
       <div class="actions" id="qact"></div>
     </div>`);
+}
+// الخيارات مش بتظهر غير لما الطالب يطلبها، عشان يحاول يحل لوحده الأول
+function revealOptions(){
+  const q = Z.list[Z.i].q;
+  document.getElementById("qopts").innerHTML = `<div class="opts enter ${q.options.every(o => o.t.length < 16) ? "two" : ""}">${Z.order.map((k, n) => `<button class="opt" data-qopt="${k}"><span class="n">${ar(n + 1)}</span><span class="t">${md(q.options[k].t)}</span></button>`).join("")}</div>`;
+  app.querySelector(".opt").focus({ preventScroll: true });
 }
 function qAnswer(k){
   if (Z.answered) return;
@@ -264,13 +267,14 @@ function finishGroup(){
       <div class="center">
         <span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span>
         <div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="60" cy="60" r="54" fill="none" stroke="${pass ? "var(--mint)" : "var(--sun)"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}"/></svg><div class="v">${ar(s)}<small>من ${ar(n)}</small></div></div>
-        <h2 class="title">${pass ? (s === n ? "العلامة الكاملة!" : "عدّيت المجموعة") : "قرّبت… محتاج " + ar(unlock - s) + " كمان"}</h2>
-        <p class="body">${pass ? (next != null ? "المجموعة اللي بعدها اتفتحت." : "كده خلّصت كل التدريبات.") : g.showRule ? "عيد المجموعة، وركّز في القاعدة اللي فوق كل سؤال." : "عيد المجموعة، ولو محتاج تراجع القواعد افتح الملخص."}</p>
+        <h2 class="title">${pass ? (s === n ? "العلامة الكاملة!" : "عدّيت المجموعة") : "قرّبت… محتاج " + ar(unlock - s) + " كمان عشان تعدّيها"}</h2>
+        <p class="body">${pass ? (next != null ? "كمّل على المجموعة اللي بعدها." : "كده خلّصت كل التدريبات.") : g.showRule ? "عيد المجموعة، وركّز في القاعدة اللي فوق كل سؤال." : "عيد المجموعة، ولو محتاج تراجع القواعد افتح الملخص."}</p>
       </div>
       ${rows ? `<div class="mast"><div class="kind">نقاطك في المجموعة دي</div>${rows}</div>` : ""}
       <div class="actions" style="justify-content:center">
         ${pass && next != null ? `<button class="btn" data-grp="${next}" data-focus>المجموعة اللي بعدها</button>` : ""}
         <button class="btn ${pass && next != null ? "ghost" : ""}" data-grp="${Z.gi}" ${pass && next != null ? "" : "data-focus"}>عيد المجموعة</button>
+        ${!pass && next != null ? `<button class="btn ghost" data-grp="${next}">المجموعة اللي بعدها</button>` : ""}
         <button class="btn ghost" data-act="summary">الملخص</button>
       </div>
     </div>`);
@@ -295,7 +299,7 @@ app.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.dopt != null) return dAnswer(+b.dataset.dopt);
   if (b.dataset.qopt != null) return qAnswer(+b.dataset.qopt);
-  if (b.dataset.grp != null) { const gi = +b.dataset.grp; if (isUnlocked(gi)) startGroup(gi); return; }
+  if (b.dataset.grp != null) return startGroup(+b.dataset.grp);
   const a = b.dataset.act;
   if (a === "home") home();
   else if (a === "discover") discover(P.discoverDone ? 0 : (P.discoverAt || 0));
@@ -303,6 +307,7 @@ app.addEventListener("click", e => {
   else if (a === "dprev") discover(D.i - 1);
   else if (a === "groups") groupsView();
   else if (a === "summary") summary();
+  else if (a === "reveal") revealOptions();
   else if (a === "qnext") qNext();
   else if (a === "rstart") { Z.i++; question(); }
   else if (a === "rskip") finishGroup();
@@ -322,5 +327,5 @@ home();
   fetch("lessons/" + id + ".json", { cache: "no-cache" })
     .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(start)
-    .catch(() => { app.innerHTML = '<div class="card" style="margin-top:24px"><h2 class="title">الدرس ده مش موجود</h2><p class="body">ارجع لقايمة الدروس واختار درس تاني.</p><div class="actions"><a class="btn" href="./" style="text-decoration:none">كل الدروس</a></div></div>'; });
+    .catch(() => { app.innerHTML = '<div class="card" style="margin-top:24px"><h2 class="title">الدرس ده مش موجود</h2><p class="body">ارجع لقايمة الدروس واختار درس تاني.</p><div class="actions"><a class="btn" href="./">→ العودة للرئيسية</a></div></div>'; });
 })();

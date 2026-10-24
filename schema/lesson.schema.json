@@ -158,7 +158,7 @@
         "title": { "$ref": "#/$defs/text" },
         "desc": { "$ref": "#/$defs/text" },
         "showRule": { "type": "boolean" },
-        "unlockScore": { "type": "integer", "minimum": 1, "description": "الدرجة اللي تفتح المجموعة اللي بعدها. لو مش موجود بيتاخد drill.unlockScore" },
+        "unlockScore": { "type": "integer", "minimum": 1, "description": "الدرجة اللي الطالب بيعدّي بيها المجموعة (كل المجموعات مفتوحة دايمًا). لو مش موجود بيتاخد drill.unlockScore" },
         "questions": {
           "type": "array",
           "minItems": 5,
