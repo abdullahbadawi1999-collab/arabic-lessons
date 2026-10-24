@@ -14,7 +14,6 @@ function md(s){
     .replace(/_{3,}/g, '<span class="blank" aria-label="فراغ"></span>');
 }
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const LV = { "سهل": "lv-easy", "متوسط": "lv-med", "صعب": "lv-hard" };
 
 /* ---------- حفظ التقدم (اختياري) ---------- */
 // وضع المعلم من الرابط بس (?teacher=1): بيفتح كل المجموعات، وبيحفظ في مفتاح لوحده عشان مايلمسش تقدّم الطالب على نفس الجهاز.
@@ -30,7 +29,12 @@ const FLAT = [];
 L.discover.forEach(st => st.screens.forEach(sc => FLAT.push(Object.assign({ stage: st.stage }, sc))));
 const RULES = FLAT.filter(s => s.type === "rule");
 const groups = L.drill.groups;
-const isUnlocked = i => TEACHER || i === 0 || ((P.groups[groups[i - 1].id] || {}).best || 0) >= L.drill.unlockScore;
+// حد فتح المجموعة اللي بعدها: بتاع المجموعة نفسها، ولو مش موجود drill.unlockScore
+const unlockOf = g => g.unlockScore ?? L.drill.unlockScore;
+const isUnlocked = i => TEACHER || i === 0 || ((P.groups[groups[i - 1].id] || {}).best || 0) >= unlockOf(groups[i - 1]);
+// لون المجموعة: مجموعات التعلّم بالترتيب أخضر ثم أصفر ثم لون الـ brand، واللي من غير قاعدة (showRule: false) بلون الصعب
+let learnN = 0;
+const LV = new Map(groups.map(g => [g, g.showRule ? (["lv-easy", "lv-med"][learnN++] || "lv-brand") : "lv-hard"]));
 
 /* ---------- عناصر مشتركة ---------- */
 function topbar(title, sub, back){
@@ -61,7 +65,7 @@ function patternBlock(p){
     ${p.caption ? `<div class="pattern-cap">${md(p.caption)}</div>` : ""}`;
 }
 function home(){
-  const doneG = groups.filter(g => (P.groups[g.id] || {}).best >= L.drill.unlockScore).length;
+  const doneG = groups.filter(g => (P.groups[g.id] || {}).best >= unlockOf(g)).length;
   render(`
   <div class="hero enter">
     <div class="unit">${esc(L.unit)} · ${esc(L.grade)}</div>
@@ -76,7 +80,7 @@ function home(){
     </button>
     <button class="tile" data-act="groups">
       <span class="num">٢</span>
-      <span class="tx"><b>التدريبات</b><span>${ar(groups.length)} مجموعات · ${ar(groups.reduce((a, g) => a + g.questions.length, 0))} سؤال · سهل ومتوسط وصعب</span></span>
+      <span class="tx"><b>التدريبات</b><span>${ar(groups.length)} مجموعات · ${ar(groups.reduce((a, g) => a + g.questions.length, 0))} سؤال</span></span>
       ${doneG ? `<span class="st">${ar(doneG)} من ${ar(groups.length)}</span>` : ""}
     </button>
     <button class="tile" data-act="summary">
@@ -153,12 +157,12 @@ function discoverEnd(){
 /* ---------- المجموعات ---------- */
 function groupsView(){
   render(`${topbar(L.title, "التدريبات")}
-    <div class="meta"><span>لازم تجيب ${ar(L.drill.unlockScore)} من ${ar(groups[0].questions.length)} عشان المجموعة اللي بعدها تتفتح</span></div>
+    <div class="meta"><span>${TEACHER ? "وضع المعلم: كل المجموعات مفتوحة" : "المجموعات بتتفتح بالترتيب"}</span></div>
     ${groups.map((g, i) => {
-      const st = P.groups[g.id] || {}; const open = isUnlocked(i);
-      return `<button class="grp enter ${LV[g.level]}" data-grp="${i}" ${open ? "" : "disabled"} ${i === 0 ? "data-focus" : ""}>
+      const st = P.groups[g.id] || {}; const open = isUnlocked(i), prev = groups[i - 1];
+      return `<button class="grp enter ${LV.get(g)}" data-grp="${i}" ${open ? "" : "disabled"} ${i === 0 ? "data-focus" : ""}>
         <span class="lv"></span>
-        <span class="tx"><span class="chip ${LV[g.level]}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span></span>
+        <span class="tx"><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span>${open ? "" : `<span class="goal">بتتفتح لما تجيب ${ar(unlockOf(prev))} من ${ar(prev.questions.length)} في «${esc(prev.level)}»</span>`}</span>
         <span class="sc">${open ? (st.best != null ? `${ar(st.best)}/${ar(g.questions.length)}<em>أحسن نتيجة</em>` : `<em>ابدأ</em>`) : `<em>مقفولة</em>`}</span>
       </button>`;
     }).join("")}`);
@@ -181,7 +185,7 @@ function question(){
   const showRule = g.showRule && q.rule;
   render(`${topbar(L.title, g.level + " · " + g.title, "groups")}
     <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="meta"><span class="chip ${LV[g.level]}"><span class="dot"></span>${it.review ? "جولة مراجعة" : esc(g.level)}</span><span>${pos}</span></div>
+    <div class="meta"><span class="chip ${LV.get(g)}"><span class="dot"></span>${it.review ? "جولة مراجعة" : esc(g.level)}</span><span>${pos}</span></div>
     ${showRule ? `<div class="rule-mini enter"><span class="tag">القاعدة اللي هتحتاجها</span>${md(q.rule)}</div>` : ""}
     <div class="card enter" id="qcard">
       <div class="kind">${esc(q.kind)}</div>
@@ -237,7 +241,7 @@ function reviewIntro(){
   render(`${topbar(L.title, Z.g.level + " · " + Z.g.title, "groups")}
     <div class="bar"><i style="width:100%"></i></div>
     <div class="card enter center" style="margin-top:18px">
-      <span class="chip ${LV[Z.g.level]}"><span class="dot"></span>جولة مراجعة</span>
+      <span class="chip ${LV.get(Z.g)}"><span class="dot"></span>جولة مراجعة</span>
       <h2 class="title" style="margin-top:10px">خلّصت الـ ${ar(mainN())} سؤال · نتيجتك ${ar(Z.score)}</h2>
       <p class="body">غلطت في ${ar(n)} ${n === 1 ? "سؤال" : n <= 10 ? "أسئلة" : "سؤال"}. هنجيب لك ${n === 1 ? "سؤال شبهه" : "أسئلة شبهها"} عشان نتأكد إنك فهمت النقطة. الجولة دي مش بتتحسب في الدرجة.</p>
       <div class="actions" style="justify-content:center"><button class="btn" data-act="rstart" data-focus>يلا نراجع</button><button class="btn ghost" data-act="rskip">اعرض النتيجة</button></div>
@@ -248,7 +252,7 @@ function finishGroup(){
   const g = Z.g, n = g.questions.length, s = Z.score;
   const st = (P.groups[g.id] = P.groups[g.id] || { best: null, attempts: 0 });
   st.attempts++; st.best = Math.max(st.best == null ? 0 : st.best, s); save();
-  const pass = s >= L.drill.unlockScore;
+  const unlock = unlockOf(g), pass = s >= unlock;
   const next = Z.gi + 1 < groups.length ? Z.gi + 1 : null;
   const C = 2 * Math.PI * 54, frac = s / n;
   const rows = Object.entries(Z.tagRun).map(([tag, v]) => {
@@ -258,10 +262,10 @@ function finishGroup(){
   render(`${topbar(L.title, g.level + " · " + g.title, "groups")}
     <div class="card enter" style="margin-top:14px">
       <div class="center">
-        <span class="chip ${LV[g.level]}"><span class="dot"></span>${esc(g.level)}</span>
+        <span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span>
         <div class="ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="none" stroke="var(--line)" stroke-width="10"/><circle cx="60" cy="60" r="54" fill="none" stroke="${pass ? "var(--mint)" : "var(--sun)"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(C * frac).toFixed(1)} ${C.toFixed(1)}"/></svg><div class="v">${ar(s)}<small>من ${ar(n)}</small></div></div>
-        <h2 class="title">${pass ? (s === n ? "العلامة الكاملة!" : "عدّيت المجموعة") : "قرّبت… محتاج " + ar(L.drill.unlockScore - s) + " كمان"}</h2>
-        <p class="body">${pass ? (next != null ? "المجموعة اللي بعدها اتفتحت." : "كده خلّصت كل التدريبات.") : "عيد المجموعة، وركّز في القاعدة اللي فوق كل سؤال."}</p>
+        <h2 class="title">${pass ? (s === n ? "العلامة الكاملة!" : "عدّيت المجموعة") : "قرّبت… محتاج " + ar(unlock - s) + " كمان"}</h2>
+        <p class="body">${pass ? (next != null ? "المجموعة اللي بعدها اتفتحت." : "كده خلّصت كل التدريبات.") : g.showRule ? "عيد المجموعة، وركّز في القاعدة اللي فوق كل سؤال." : "عيد المجموعة، ولو محتاج تراجع القواعد افتح الملخص."}</p>
       </div>
       ${rows ? `<div class="mast"><div class="kind">نقاطك في المجموعة دي</div>${rows}</div>` : ""}
       <div class="actions" style="justify-content:center">
@@ -275,7 +279,7 @@ function finishGroup(){
 /* ---------- الملخص ---------- */
 function summary(){
   const all = RULES.concat(L.summaryExtra || []);
-  const tagRows = Object.entries(P.tags).filter(([, v]) => v.n).map(([tag, v]) => {
+  const tagRows = Object.entries(P.tags).filter(([tag, v]) => v.n && tag in L.drill.tags).map(([tag, v]) => {
     const p = v.ok / v.n, cls = p >= .8 ? "ok" : p >= .5 ? "mid" : "low", lbl = p >= .8 ? "متقن" : p >= .5 ? "قرّبت" : "راجعها";
     return `<div class="mrow"><span class="lb">${esc(L.drill.tags[tag] || tag)}</span><span class="mb"><i style="width:${Math.round(p * 100)}%"></i></span><span class="pill ${cls}">${lbl}</span></div>`;
   }).join("");

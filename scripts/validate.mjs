@@ -94,16 +94,13 @@ function checkLesson(L, file, r){
     const at = `drill.groups[${gi}]`;
     if (groupIds.has(g.id)) r.error(`${at}.id`, `id المجموعة «${g.id}» متكرر`);
     groupIds.add(g.id);
-    if (D.unlockScore > g.questions.length) r.error("drill.unlockScore", `أكبر من عدد أسئلة المجموعة «${g.id}»`);
-    if (g.showRule !== (g.level !== "صعب")) r.warn(`${at}.showRule`, `المتوقع ${g.level === "صعب" ? "false في الصعب" : "true في السهل والمتوسط"}`);
+    const unlock = g.unlockScore ?? D.unlockScore;
+    if (unlock > g.questions.length) r.error(g.unlockScore != null ? `${at}.unlockScore` : "drill.unlockScore", `${unlock} أكبر من عدد أسئلة المجموعة «${g.id}» (${g.questions.length})`);
     g.questions.forEach((q, qi) => {
       all.push([`${at}.questions[${qi}]`, q]);
       if (g.showRule && !q.rule) r.warn(`${at}.questions[${qi}]`, "المجموعة بتعرض القاعدة بس السؤال مفيهوش rule", q.id);
     });
   });
-  const levels = D.groups.map(g => g.level).join("، ");
-  if (levels !== "سهل، متوسط، صعب") r.warn("drill.groups", `المتوقع ٣ مجموعات بالترتيب سهل، متوسط، صعب (لقيت: ${levels})`);
-
   for (const [tag, list] of Object.entries(D.reserve)) {
     if (!(tag in D.tags)) r.error(`drill.reserve.${tag}`, `الـ tag «${tag}» مش متعرّف في drill.tags`);
     list.forEach((q, qi) => {

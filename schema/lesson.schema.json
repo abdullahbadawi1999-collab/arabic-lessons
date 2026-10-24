@@ -154,14 +154,15 @@
       "additionalProperties": false,
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9_-]+$" },
-        "level": { "enum": ["سهل", "متوسط", "صعب"] },
+        "level": { "$ref": "#/$defs/text", "description": "اسم قصير للمجموعة (الثلاثي، الاستخراج، شامل…)" },
         "title": { "$ref": "#/$defs/text" },
         "desc": { "$ref": "#/$defs/text" },
         "showRule": { "type": "boolean" },
+        "unlockScore": { "type": "integer", "minimum": 1, "description": "الدرجة اللي تفتح المجموعة اللي بعدها. لو مش موجود بيتاخد drill.unlockScore" },
         "questions": {
           "type": "array",
-          "minItems": 15,
-          "maxItems": 15,
+          "minItems": 5,
+          "maxItems": 30,
           "items": { "$ref": "#/$defs/question" }
         }
       }
