@@ -32,6 +32,9 @@ const unlockOf = g => g.unlockScore ?? L.drill.unlockScore;
 // لون المجموعة: مجموعات التعلّم بالترتيب أخضر ثم أصفر ثم لون الـ brand، واللي من غير قاعدة (showRule: false) بلون الصعب
 let learnN = 0;
 const LV = new Map(groups.map(g => [g, g.showRule ? (["lv-easy", "lv-med"][learnN++] || "lv-brand") : "lv-hard"]));
+// اسم الجزء اللي بيتكتب أول كل كارت مجموعة: أسئلة الجزء الأول، الثاني، …
+const ORD = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
+const partName = i => "أسئلة الجزء " + (ORD[i] || ar(i + 1));
 
 /* ---------- عناصر مشتركة ---------- */
 function topbar(title, sub, back){
@@ -159,7 +162,7 @@ function groupsView(){
       const st = P.groups[g.id] || {};
       return `<button class="grp enter ${LV.get(g)}" data-grp="${i}" ${i === 0 ? "data-focus" : ""}>
         <span class="lv"></span>
-        <span class="tx"><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span></span>
+        <span class="tx"><span class="part">${partName(i)}</span><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span></span>
         <span class="sc">${st.best != null ? `${ar(st.best)}/${ar(g.questions.length)}<em>أحسن نتيجة</em>` : `<em>ابدأ</em>`}</span>
       </button>`;
     }).join("")}`);
