@@ -172,7 +172,7 @@ function groupsView(){
 let Z = null;
 function startGroup(gi){
   const g = groups[gi];
-  Z = { gi, g, list: g.questions.map(q => ({ q, review: false })), i: 0, score: 0, wrong: [], reviewStarted: false, done: false, answered: false, usedReserve: new Set(), tagRun: {} };
+  Z = { gi, g, list: g.questions.map(q => ({ q, review: false })), i: 0, score: 0, wrong: [], reviewStarted: false, done: false, answered: false, usedReview: new Set(), tagRun: {} };
   question();
 }
 function question(){
@@ -234,12 +234,25 @@ function qNext(){
   if (!Z.reviewStarted && Z.wrong.length) return reviewIntro();
   finishGroup();
 }
+// لكل سؤال غلط بنجيب نفس نوع السؤال (نفس الـ tag) بمثال مختلف. بندوّر بالترتيب في: reserve، وبعدين المجموعات التانية،
+// وبعدين أسئلة المجموعة اللي جاوبها صح، وبعدين اللي غلط فيها. وفي كل مرة بنفضّل نفس الـ kind. السؤال نفسه بيرجع بس لو مفيش غيره خالص.
+function similarTo(q){
+  const others = groups.filter(g => g !== Z.g).flatMap(g => g.questions);
+  const tiers = [L.drill.reserve[q.tag] || [], others, Z.g.questions.filter(x => !Z.wrong.includes(x)), Z.wrong];
+  const fits = x => x.id !== q.id && x.tag === q.tag && !Z.usedReview.has(x.id);
+  for (const sameKind of [true, false])
+    for (const tier of tiers) {
+      const pool = tier.filter(x => fits(x) && (!sameKind || x.kind === q.kind));
+      if (pool.length) return pick(pool);
+    }
+  const any = tiers.flat().filter(x => x.id !== q.id && x.tag === q.tag); // اتسأل قبل كده في المراجعة، بس مثاله مختلف
+  return any.length ? pick(any) : q;
+}
 function reviewIntro(){
   Z.reviewStarted = true;
   const extra = Z.wrong.map(q => {
-    const pool = (L.drill.reserve[q.tag] || []).filter(r => !Z.usedReserve.has(r.id));
-    const r = pool.length ? pool[Math.floor(Math.random() * pool.length)] : q;
-    Z.usedReserve.add(r.id);
+    const r = similarTo(q);
+    Z.usedReview.add(r.id);
     return { q: r, review: true };
   });
   Z.list = Z.list.concat(extra);
