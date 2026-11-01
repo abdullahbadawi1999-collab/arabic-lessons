@@ -190,3 +190,23 @@ a.lesson:hover{border-color:var(--brand)}
 .xpart .actions{margin-top:10px}
 .xmodel .fb{margin-top:12px}
 .xmodel p{margin:4px 0}
+
+/* اسأل المعلم الآلي */
+.tutor{margin-top:12px}
+.tutor-open{font-size:14.5px;min-height:40px;padding:8px 16px;border-color:var(--lv-exam);color:var(--lv-exam)}
+.tutor-chat{border:1.5px solid var(--lv-exam);border-radius:14px;padding:12px;background:var(--surface)}
+.tutor-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+.tutor-head b{color:var(--lv-exam)}
+.tutor-head span{font-size:12.5px;color:var(--muted)}
+.tutor-log{display:grid;gap:8px}
+.tmsg{border-radius:12px;padding:8px 12px;font-size:15.5px;line-height:1.8;max-width:92%}
+.tmsg.me{background:var(--brand-soft);justify-self:start}
+.tmsg.bot{background:var(--surface-2);justify-self:end}
+.tmsg.wait{color:var(--muted)}
+.tmsg.err{background:var(--rose-soft);color:var(--ink)}
+.tutor-chips{margin:8px 0}
+.tutor-chips .chip{border:0;cursor:pointer;font-size:13px}
+.tutor-row{display:flex;gap:8px;align-items:flex-end}
+.tutor-input{flex:1;min-width:0;font:inherit;font-size:15.5px;padding:8px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);resize:vertical}
+.tutor-input:focus{border-color:var(--lv-exam);outline:none}
+.tutor-row .btn{min-height:44px;padding:8px 18px}

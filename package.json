@@ -1,11 +1,14 @@
 {
   "name": "arabic-lessons",
   "private": true,
-  "description": "Validation tooling only; the site itself has no build step or runtime dependencies.",
+  "description": "Site has no build step; api/ask.mjs (Vercel) uses @anthropic-ai/sdk, validation uses ajv.",
   "scripts": {
     "validate": "node scripts/validate.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
   }
 }
