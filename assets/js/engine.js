@@ -52,10 +52,10 @@ function render(html){ app.innerHTML = html; window.scrollTo({ top: 0 }); const 
 // زرار تحت القاعدة، وبعد إجابة سؤال التدريب، وتحت الإجابة النموذجية في نماذج الامتحان.
 // بيبعت للدالة اللي على Vercel سؤال الطالب ومعاه اللي قدامه في الصفحة، والرد بيظهر جوه نفس المكان.
 // TUTOR_LIVE بيتعمل true بعد ما الدالة على Vercel تتجرب. قبل كده الزرار بيظهر بس للتجربة (tutorUrl في localStorage).
-const TUTOR_LIVE = false;
+const TUTOR_LIVE = true;
 let tutorOverride = null;
 try { tutorOverride = localStorage.getItem("tutorUrl"); } catch (e) {}
-const TUTOR_URL = tutorOverride || (location.hostname.endsWith(".vercel.app") ? "/api/ask" : "https://arabic-lessons.vercel.app/api/ask");
+const TUTOR_URL = tutorOverride || (location.hostname.endsWith(".vercel.app") ? "/api/ask" : "https://arabic-lessons-nine.vercel.app/api/ask");
 const TUTOR_ON = TUTOR_LIVE || !!tutorOverride;
 const plain = s => String(s ?? "").replace(/\[\[|\]\]|\*\*|[{}]/g, "").replace(/_{3,}/g, "____");
 const TUTOR = {};
