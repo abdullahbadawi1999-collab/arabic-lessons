@@ -165,7 +165,51 @@ function groupsView(){
         <span class="tx"><span class="part">${partName(i)}</span><span class="chip ${LV.get(g)}"><span class="dot"></span>${esc(g.level)}</span><b style="color:var(--ink)">${esc(g.title)}</b><span>${esc(g.desc)}</span></span>
         <span class="sc">${st.best != null ? `${ar(st.best)}/${ar(g.questions.length)}<em>أحسن نتيجة</em>` : `<em>ابدأ</em>`}</span>
       </button>`;
-    }).join("")}`);
+    }).join("")}
+    ${EXAMS.length ? `<button class="grp enter lv-exam" data-act="exams">
+        <span class="lv"></span>
+        <span class="tx"><span class="part">نماذج امتحان</span><b style="color:var(--ink)">أسئلة زي الامتحان بالظبط</b><span>${ar(EXAMS.length)} أسئلة · الإجابة النموذجية مشروحة جنب كل سؤال</span></span>
+        <span class="sc"><em>ابدأ</em></span>
+      </button>` : ""}`);
+}
+
+/* ---------- نماذج الامتحان ---------- */
+const EXAMS = L.exams || [];
+const lines = a => a.map(l => `<p>${md(l)}</p>`).join("");
+function examsList(){
+  render(`${topbar(L.title, "نماذج امتحان", "groups")}
+    <div class="meta"><span>اقرا الفقرة وحل كل سؤال، وبعدين اعرض الإجابة جنبه</span></div>
+    ${EXAMS.map((e, i) => `<button class="grp enter lv-exam" data-exam="${i}" ${i === 0 ? "data-focus" : ""}>
+        <span class="lv"></span>
+        <span class="tx"><b style="color:var(--ink)">${esc(e.title)}</b><span>${esc(e.passage.replace(/\[\[|\]\]|\*\*|[{}]/g, "").slice(0, 70))}…</span></span>
+        <span class="sc"><em>${ar(e.parts.length)} أسئلة</em></span>
+      </button>`).join("")}`);
+}
+// كل سؤال جنبه زرار «اعرض الإجابة» بيفتح الإجابة النموذجية وشرحها لوحده
+function examView(i){
+  const e = EXAMS[i];
+  render(`${topbar(L.title, "نماذج امتحان · " + e.title, "exams")}
+    <div class="meta"><span>${esc(e.title)}</span>${e.source ? `<span>${esc(e.source)}</span>` : ""}</div>
+    <div class="card enter passage"><div class="kind">اقرأ الفقرة الآتية، ثم أجب:</div><div class="ptext">«${md(e.passage)}»</div></div>
+    ${e.parts.map((p, pi) => `<div class="card enter xpart">
+      <div class="stem"><span class="xlabel">(${esc(p.label)})</span> ${md(p.prompt).replace(/\n/g, "<br>")}</div>
+      <textarea class="xinput" rows="2" placeholder="اكتب إجابتك هنا"></textarea>
+      <div class="actions"><button class="btn ghost" data-reveal="${pi}">اعرض الإجابة</button></div>
+      <div class="xmodel" id="xm${pi}" hidden>
+        <div class="fb good"><b class="h">الإجابة النموذجية</b>${lines(p.answer)}</div>
+        <div class="explain"><span class="lbl">ليه كده؟</span>${lines(p.explain)}</div>
+      </div>
+    </div>`).join("")}
+    <div class="actions">
+      ${i + 1 < EXAMS.length ? `<button class="btn" data-exam="${i + 1}">السؤال اللي بعده</button>` : ""}
+      ${i > 0 ? `<button class="btn ghost" data-exam="${i - 1}">السؤال اللي قبله</button>` : ""}
+      <button class="btn ghost" data-act="exams">كل النماذج</button>
+    </div>`);
+}
+function toggleModel(b){
+  const m = document.getElementById("xm" + b.dataset.reveal);
+  m.hidden = !m.hidden;
+  b.textContent = m.hidden ? "اعرض الإجابة" : "اخفي الإجابة";
 }
 
 /* ---------- الأسئلة ---------- */
@@ -316,12 +360,15 @@ app.addEventListener("click", e => {
   if (b.dataset.dopt != null) return dAnswer(+b.dataset.dopt);
   if (b.dataset.qopt != null) return qAnswer(+b.dataset.qopt);
   if (b.dataset.grp != null) return startGroup(+b.dataset.grp);
+  if (b.dataset.exam != null) return examView(+b.dataset.exam);
+  if (b.dataset.reveal != null) return toggleModel(b);
   const a = b.dataset.act;
   if (a === "home") home();
   else if (a === "discover") discover(P.discoverDone ? 0 : (P.discoverAt || 0));
   else if (a === "dnext") dNext();
   else if (a === "dprev") discover(D.i - 1);
   else if (a === "groups") groupsView();
+  else if (a === "exams") examsList();
   else if (a === "summary") summary();
   else if (a === "reveal") revealOptions();
   else if (a === "qnext") qNext();
@@ -329,7 +376,7 @@ app.addEventListener("click", e => {
   else if (a === "rskip") finishGroup();
 });
 document.addEventListener("keydown", e => {
-  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.altKey || e.ctrlKey || e.metaKey || (e.target.closest && e.target.closest("textarea, input"))) return;
   const n = "1234".indexOf(e.key) >= 0 ? +e.key : "١٢٣٤".indexOf(e.key) >= 0 ? "١٢٣٤".indexOf(e.key) + 1 : 0;
   if (n) { const o = app.querySelectorAll(".opt")[n - 1]; if (o && !o.disabled) { o.click(); e.preventDefault(); } }
 });

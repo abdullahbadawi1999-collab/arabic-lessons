@@ -35,7 +35,12 @@
       "type": "array",
       "items": { "$ref": "#/$defs/ruleScreen" }
     },
-    "drill": { "$ref": "#/$defs/drill" }
+    "drill": { "$ref": "#/$defs/drill" },
+    "exams": {
+      "description": "نماذج امتحان: بتظهر في قايمة التدريبات بعد آخر مجموعة. كل نموذج فقرة وتحتها أسئلة، وكل سؤال ليه إجابة نموذجية وشرح.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/exam" }
+    }
   },
   "$defs": {
     "text": { "type": "string", "minLength": 1 },
@@ -148,6 +153,32 @@
       }
     },
     "tagName": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "exam": {
+      "type": "object",
+      "required": ["id", "title", "passage", "parts"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+        "title": { "$ref": "#/$defs/text" },
+        "source": { "$ref": "#/$defs/text" },
+        "passage": { "$ref": "#/$defs/text" },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["label", "prompt", "answer", "explain"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "$ref": "#/$defs/text" },
+              "prompt": { "$ref": "#/$defs/text" },
+              "answer": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+              "explain": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } }
+            }
+          }
+        }
+      }
+    },
     "group": {
       "type": "object",
       "required": ["id", "level", "title", "desc", "showRule", "questions"],

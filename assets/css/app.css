@@ -4,7 +4,7 @@
   --brand:#3A4FD6; --brand-ink:#FFFFFF; --brand-soft:#E8EBFF;
   --coral:#F0533F; --sun:#E89A00; --sun-soft:#FFF3D6; --sun-line:#F5D78A;
   --mint:#0F9A70; --mint-soft:#E1F6EE; --rose:#D93A45; --rose-soft:#FDEBEC;
-  --lv-easy:#0F9A70; --lv-med:#E89A00; --lv-hard:#F0533F;
+  --lv-easy:#0F9A70; --lv-med:#E89A00; --lv-hard:#F0533F; --lv-exam:#7A4FD6;
   --shadow:0 1px 2px rgba(22,26,51,.05),0 8px 24px rgba(22,26,51,.06);
   --ui:"IBM Plex Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
   --ar:"Noto Naskh Arabic","Amiri","Traditional Arabic","Times New Roman",serif;
@@ -15,14 +15,14 @@
   --brand:#8E9CFF; --brand-ink:#0F1222; --brand-soft:#232A4E;
   --coral:#FF7A6B; --sun:#FFC24D; --sun-soft:#2C2614; --sun-line:#5A4A1E;
   --mint:#3DD3A3; --mint-soft:#10291F; --rose:#FF6B72; --rose-soft:#33171B;
-  --lv-easy:#3DD3A3; --lv-med:#FFC24D; --lv-hard:#FF7A6B;
+  --lv-easy:#3DD3A3; --lv-med:#FFC24D; --lv-hard:#FF7A6B; --lv-exam:#B49CFF;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1222; --surface:#181C31; --surface-2:#1F2440; --ink:#ECEEF8; --muted:#A3A9C4; --line:#2B3050;
   --brand:#8E9CFF; --brand-ink:#0F1222; --brand-soft:#232A4E;
   --coral:#FF7A6B; --sun:#FFC24D; --sun-soft:#2C2614; --sun-line:#5A4A1E;
   --mint:#3DD3A3; --mint-soft:#10291F; --rose:#FF6B72; --rose-soft:#33171B;
-  --lv-easy:#3DD3A3; --lv-med:#FFC24D; --lv-hard:#FF7A6B;
+  --lv-easy:#3DD3A3; --lv-med:#FFC24D; --lv-hard:#FF7A6B; --lv-exam:#B49CFF;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -50,7 +50,7 @@ strong{font-weight:700;color:var(--brand)}
 .meta{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:10px 0 14px}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);letter-spacing:.2px}
 .chip .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
-.lv-easy{color:var(--lv-easy)} .lv-med{color:var(--lv-med)} .lv-hard{color:var(--lv-hard)} .lv-brand{color:var(--brand)}
+.lv-easy{color:var(--lv-easy)} .lv-med{color:var(--lv-med)} .lv-hard{color:var(--lv-hard)} .lv-brand{color:var(--brand)} .lv-exam{color:var(--lv-exam)}
 
 /* card */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px 20px;box-shadow:var(--shadow)}
@@ -180,3 +180,13 @@ a.lesson:hover{border-color:var(--brand)}
 .lesson .num{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:700;background:var(--brand-soft);color:var(--brand)}
 .lesson.soon .num{background:var(--surface-2);color:var(--muted)}
 .lesson .go{color:var(--brand);font-weight:700}
+
+/* exam models */
+.passage .ptext{font-family:var(--ar);font-size:21px;font-weight:600;line-height:2;margin-top:6px}
+.passage .kw{color:var(--ink);text-decoration:underline;text-decoration-color:var(--brand);text-decoration-thickness:2px;text-underline-offset:7px}
+.xlabel{color:var(--brand);font-weight:700}
+.xinput{display:block;width:100%;margin-top:12px;font-family:var(--ar);font-size:18px;line-height:1.7;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);resize:vertical}
+.xinput:focus{border-color:var(--brand);outline:none}
+.xpart .actions{margin-top:10px}
+.xmodel .fb{margin-top:12px}
+.xmodel p{margin:4px 0}

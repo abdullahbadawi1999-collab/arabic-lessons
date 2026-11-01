@@ -123,6 +123,13 @@ function checkLesson(L, file, r){
   for (const tag of used) if (!(D.reserve[tag] || []).length) r.error("drill.reserve", `الـ tag «${tag}» مستخدم في الأسئلة ومفيش له أسئلة في reserve`);
   for (const tag in D.tags) if (!used.has(tag)) r.warn(`drill.tags.${tag}`, "tag متعرّف ومش مستخدم في أي سؤال");
 
+  // نماذج الامتحان
+  const examIds = new Set();
+  (L.exams || []).forEach((e, ei) => {
+    if (examIds.has(e.id)) r.error(`exams[${ei}].id`, `id النموذج «${e.id}» متكرر`);
+    examIds.add(e.id);
+  });
+
   // الترميز
   walkStrings(L, "", (s, at) => {
     const n = re => (s.match(re) || []).length;
@@ -130,7 +137,7 @@ function checkLesson(L, file, r){
   });
 
   const reserve = Object.values(D.reserve).reduce((a, l) => a + l.length, 0);
-  r.note = `${screens} شاشة، ${all.length - reserve} سؤال، ${reserve} احتياطي`;
+  r.note = `${screens} شاشة، ${all.length - reserve} سؤال، ${reserve} احتياطي` + (L.exams ? `، ${L.exams.length} نموذج امتحان` : "");
 }
 
 /* ---------- الفهرس ---------- */
