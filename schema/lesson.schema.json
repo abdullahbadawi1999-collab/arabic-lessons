@@ -224,6 +224,34 @@
         },
         "answer": { "type": "integer", "minimum": 0, "maximum": 3 },
         "rule": { "$ref": "#/$defs/optionalText" },
+        "explain": { "$ref": "#/$defs/text" },
+        "twin": { "$ref": "#/$defs/twin" }
+      }
+    },
+    "twin": {
+      "description": "مثال شبيه بنفس نوع السؤال بالظبط، بيظهر في جولة المراجعة لو الطالب غلط في السؤال. الـ tag والـ kind والـ rule بيتاخدوا من السؤال الأصلي.",
+      "type": "object",
+      "required": ["id", "stem", "options", "answer", "explain"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$" },
+        "stem": { "$ref": "#/$defs/text" },
+        "sentence": { "$ref": "#/$defs/optionalText" },
+        "options": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["t", "fb"],
+            "additionalProperties": false,
+            "properties": {
+              "t": { "$ref": "#/$defs/text" },
+              "fb": { "$ref": "#/$defs/optionalText" }
+            }
+          }
+        },
+        "answer": { "type": "integer", "minimum": 0, "maximum": 3 },
         "explain": { "$ref": "#/$defs/text" }
       }
     }

@@ -98,6 +98,7 @@ function checkLesson(L, file, r){
     if (unlock > g.questions.length) r.error(g.unlockScore != null ? `${at}.unlockScore` : "drill.unlockScore", `${unlock} أكبر من عدد أسئلة المجموعة «${g.id}» (${g.questions.length})`);
     g.questions.forEach((q, qi) => {
       all.push([`${at}.questions[${qi}]`, q]);
+      if (q.twin) all.push([`${at}.questions[${qi}].twin`, { ...q, ...q.twin }]);
       if (g.showRule && !q.rule) r.warn(`${at}.questions[${qi}]`, "المجموعة بتعرض القاعدة بس السؤال مفيهوش rule", q.id);
     });
   });
@@ -137,7 +138,8 @@ function checkLesson(L, file, r){
   });
 
   const reserve = Object.values(D.reserve).reduce((a, l) => a + l.length, 0);
-  r.note = `${screens} شاشة، ${all.length - reserve} سؤال، ${reserve} احتياطي` + (L.exams ? `، ${L.exams.length} نموذج امتحان` : "");
+  const twins = D.groups.reduce((a, g) => a + g.questions.filter(q => q.twin).length, 0);
+  r.note = `${screens} شاشة، ${all.length - reserve - twins} سؤال، ${twins} مثال شبيه، ${reserve} احتياطي` + (L.exams ? `، ${L.exams.length} نموذج امتحان` : "");
 }
 
 /* ---------- الفهرس ---------- */

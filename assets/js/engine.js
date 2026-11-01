@@ -281,6 +281,8 @@ function qNext(){
 // لكل سؤال غلط بنجيب نفس نوع السؤال (نفس الـ tag) بمثال مختلف. بندوّر بالترتيب في: reserve، وبعدين المجموعات التانية،
 // وبعدين أسئلة المجموعة اللي جاوبها صح، وبعدين اللي غلط فيها. وفي كل مرة بنفضّل نفس الـ kind. السؤال نفسه بيرجع بس لو مفيش غيره خالص.
 function similarTo(q){
+  // الأول المثال الشبيه اللي متكتب للسؤال نفسه (twin)
+  if (q.twin && !Z.usedReview.has(q.twin.id)) return Object.assign({}, q, q.twin, { twin: null });
   const others = groups.filter(g => g !== Z.g).flatMap(g => g.questions);
   const tiers = [L.drill.reserve[q.tag] || [], others, Z.g.questions.filter(x => !Z.wrong.includes(x)), Z.wrong];
   const fits = x => x.id !== q.id && x.tag === q.tag && !Z.usedReview.has(x.id);
