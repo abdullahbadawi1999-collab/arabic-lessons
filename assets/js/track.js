@@ -8,8 +8,8 @@
     if (o) window.API_BASE = o;
     id = localStorage.getItem("device:v1");
     if (!id) { id = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)); localStorage.setItem("device:v1", id); }
-    // على الجهاز وقت التجربة مش بنعدّ، إلا لو trackTest متفعّل
-    on = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) || !!localStorage.getItem("trackTest");
+    // بنعدّ على رابط الطلاب (GitHub) بس: مش وقت التجربة على الجهاز، ولا على نسخة Vercel اللي Vercel بيفتحها لوحده وقت النشر
+    on = location.hostname.endsWith("github.io") || !!localStorage.getItem("trackTest");
   } catch (e) { id = "anon"; }
   window.deviceId = id;
   window.track = function(kind, lesson, detail){

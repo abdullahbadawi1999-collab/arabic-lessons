@@ -1,4 +1,4 @@
-// صفحة الإحصائيات للمعلم: محمية بكلمة سر (STATS_KEY في إعدادات Vercel).
+// صفحة الإحصائيات للمعلم (أجهزة التجربة اللي بتبدأ بـ claude-test مش بتتعد): محمية بكلمة سر (STATS_KEY في إعدادات Vercel).
 import { sql, ensureTable } from "./_db.mjs";
 
 const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة" };
@@ -38,7 +38,7 @@ export default async function handler(req, res){
       COUNT(*) FILTER (WHERE kind = 'tutor' AND ts > now() - interval '7 days') AS tutor_week,
       COUNT(DISTINCT device) FILTER (WHERE kind = 'tutor') AS tutor_devices,
       MIN(ts) AS since
-    FROM events`;
+    FROM events WHERE device NOT LIKE 'claude-test%'`;
   const lessons = await sql`SELECT lesson,
       COUNT(DISTINCT device) FILTER (WHERE kind = 'lesson') AS devices,
       COUNT(*) FILTER (WHERE kind = 'lesson') AS opens,
@@ -46,10 +46,10 @@ export default async function handler(req, res){
       COUNT(*) FILTER (WHERE kind = 'exam') AS exams,
       COUNT(*) FILTER (WHERE kind = 'tutor') AS tutor,
       COUNT(DISTINCT device) FILTER (WHERE kind = 'tutor') AS tutor_devices
-    FROM events WHERE lesson IS NOT NULL GROUP BY lesson ORDER BY opens DESC`;
-  const places = await sql`SELECT detail, COUNT(*) AS n FROM events WHERE kind = 'tutor' GROUP BY detail ORDER BY n DESC`;
+    FROM events WHERE lesson IS NOT NULL AND device NOT LIKE 'claude-test%' GROUP BY lesson ORDER BY opens DESC`;
+  const places = await sql`SELECT detail, COUNT(*) AS n FROM events WHERE kind = 'tutor' AND device NOT LIKE 'claude-test%' GROUP BY detail ORDER BY n DESC`;
   const days = await sql`SELECT (ts AT TIME ZONE 'Africa/Cairo')::date AS day, COUNT(DISTINCT device) AS devices, COUNT(*) FILTER (WHERE kind = 'tutor') AS tutor
-    FROM events WHERE ts > now() - interval '14 days' GROUP BY day ORDER BY day DESC`;
+    FROM events WHERE ts > now() - interval '14 days' AND device NOT LIKE 'claude-test%' GROUP BY day ORDER BY day DESC`;
 
   const card = (n, label) => `<div class="card"><b>${AR(n)}</b><span>${label}</span></div>`;
   const since = tot.since ? new Date(tot.since).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : "—";
