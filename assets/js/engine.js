@@ -1,6 +1,8 @@
 function start(L){
 "use strict";
 document.title = "درس " + L.title;
+const track = window.track || function(){};
+track("lesson", L.id);
 const app = document.getElementById("app");
 const AR = "٠١٢٣٤٥٦٧٨٩";
 const ar = n => String(n).replace(/\d/g, d => AR[d]);
@@ -55,15 +57,15 @@ function render(html){ app.innerHTML = html; window.scrollTo({ top: 0 }); const 
 const TUTOR_LIVE = true;
 let tutorOverride = null;
 try { tutorOverride = localStorage.getItem("tutorUrl"); } catch (e) {}
-const TUTOR_URL = tutorOverride || (location.hostname.endsWith(".vercel.app") ? "/api/ask" : "https://arabic-lessons-nine.vercel.app/api/ask");
+const TUTOR_URL = tutorOverride || (window.API_BASE || "https://arabic-lessons-nine.vercel.app/api") + "/ask";
 const TUTOR_ON = TUTOR_LIVE || !!tutorOverride;
 const plain = s => String(s ?? "").replace(/\[\[|\]\]|\*\*|[{}]/g, "").replace(/_{3,}/g, "____");
 const TUTOR = {};
 let tutorN = 0;
-function tutorBox(context){
+function tutorBox(context, place){
   if (!TUTOR_ON) return "";
   const key = "t" + (++tutorN);
-  TUTOR[key] = { context, history: [] };
+  TUTOR[key] = { context, place, history: [] };
   return `<div class="tutor" id="${key}"><button class="btn ghost tutor-open" data-act="tutor" data-tkey="${key}">اسأل المعلم الآلي</button></div>`;
 }
 function tutorOpen(key){
@@ -89,7 +91,7 @@ async function tutorSend(key, text){
   let reply;
   try {
     const r = await fetch(TUTOR_URL, { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lesson: L.title, context: st.context, history: st.history, message: text }) });
+      body: JSON.stringify({ lesson: L.title, lessonId: L.id, place: st.place, device: window.deviceId, context: st.context, history: st.history, message: text }) });
     const data = await r.json().catch(() => ({}));
     if (!r.ok || !data.reply) throw new Error(data.error || "");
     reply = data.reply;
@@ -162,7 +164,7 @@ function discover(i){
       <div class="actions"><button class="btn" data-act="dnext" data-focus>كمّل</button>${D.i ? '<button class="btn ghost" data-act="dprev">رجوع</button>' : ""}</div></div>`;
   } else if (s.type === "rule") {
     inner = `<div class="stage" style="margin-top:4px">${esc(s.stage)}</div>${ruleCard(s)}
-      ${tutorBox(`الطالب بيقرا بطاقة القاعدة دي (مرحلة «${plain(s.stage)}»):\n${plain(s.title)}\n${s.lines.map(l => "- " + plain(l)).join("\n")}`)}
+      ${tutorBox(`الطالب بيقرا بطاقة القاعدة دي (مرحلة «${plain(s.stage)}»):\n${plain(s.title)}\n${s.lines.map(l => "- " + plain(l)).join("\n")}`, "rule")}
       <div class="actions"><button class="btn" data-act="dnext" data-focus>تمام، كمّل</button><button class="btn ghost" data-act="dprev">رجوع</button></div>`;
   } else {
     D.order = shuffle(s.options.map((o, k) => k));
@@ -245,6 +247,7 @@ function examsList(){
 // كل سؤال جنبه زرار «اعرض الإجابة» بيفتح الإجابة النموذجية وشرحها لوحده
 function examView(i){
   const e = EXAMS[i];
+  track("exam", L.id, e.id);
   render(`${topbar(L.title, "نماذج امتحان · " + e.title, "exams")}
     <div class="meta"><span>${esc(e.title)}</span>${e.source ? `<span>${esc(e.source)}</span>` : ""}</div>
     <div class="card enter passage"><div class="kind">اقرأ الفقرة الآتية، ثم أجب:</div><div class="ptext">«${md(e.passage)}»</div></div>
@@ -255,7 +258,7 @@ function examView(i){
       <div class="xmodel" id="xm${pi}" hidden>
         <div class="fb good"><b class="h">الإجابة النموذجية</b>${lines(p.answer)}</div>
         <div class="explain"><span class="lbl">ليه كده؟</span>${lines(p.explain)}</div>
-        ${tutorBox(`الطالب بيحل نموذج امتحان.\nالفقرة: «${plain(e.passage)}»\nالسؤال (${plain(p.label)}): ${plain(p.prompt)}\nالإجابة النموذجية:\n${p.answer.map(plain).join("\n")}\nالشرح اللي قدامه:\n${p.explain.map(plain).join("\n")}`)}
+        ${tutorBox(`الطالب بيحل نموذج امتحان.\nالفقرة: «${plain(e.passage)}»\nالسؤال (${plain(p.label)}): ${plain(p.prompt)}\nالإجابة النموذجية:\n${p.answer.map(plain).join("\n")}\nالشرح اللي قدامه:\n${p.explain.map(plain).join("\n")}`, "exam")}
       </div>
     </div>`).join("")}
     <div class="actions">
@@ -274,6 +277,7 @@ function toggleModel(b){
 let Z = null;
 function startGroup(gi){
   const g = groups[gi];
+  track("group", L.id, g.id);
   Z = { gi, g, list: g.questions.map(q => ({ q, review: false })), i: 0, score: 0, wrong: [], reviewStarted: false, done: false, answered: false, usedReview: new Set(), tagRun: {} };
   question();
 }
@@ -334,7 +338,7 @@ function qAnswer(k){
     ok ? "الطالب جاوب صح." : `الطالب اختار: ${plain(q.options[k].t)} (غلط)، والتعليق اللي ظهرله: ${plain(q.options[k].fb)}`,
     `الشرح اللي ظهرله: ${plain(q.explain)}`,
     q.rule ? `القاعدة: ${plain(q.rule)}` : ""
-  ].filter(Boolean).join("\n")));
+  ].filter(Boolean).join("\n"), "drill"));
   const last = Z.i >= Z.list.length - 1;
   document.getElementById("qact").innerHTML = `<button class="btn" data-act="qnext" data-focus>${last && (Z.reviewStarted || !Z.wrong.length) ? "شوف النتيجة" : "التالي"}</button>`;
   document.querySelector('[data-act="qnext"]').focus({ preventScroll: true });
@@ -436,7 +440,7 @@ app.addEventListener("click", e => {
   if (a === "tsend") return tutorSend(b.dataset.tkey);
   if (a === "tquick") return tutorSend(b.dataset.tkey, b.textContent);
   if (a === "home") home();
-  else if (a === "discover") discover(P.discoverDone ? 0 : (P.discoverAt || 0));
+  else if (a === "discover") { track("discover", L.id); discover(P.discoverDone ? 0 : (P.discoverAt || 0)); }
   else if (a === "dnext") dNext();
   else if (a === "dprev") discover(D.i - 1);
   else if (a === "groups") groupsView();

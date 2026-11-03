@@ -1,14 +1,9 @@
 // «اسأل المعلم الآلي»: الموقع بيبعت هنا سؤال الطالب ومعاه اللي قدامه في الدرس (القاعدة أو السؤال أو الإجابة النموذجية)،
 // والدالة دي بتكلّم Claude بالمفتاح السري (ANTHROPIC_API_KEY في إعدادات Vercel) وترجّع الرد. المفتاح عمره ما بيوصل للمتصفح.
 import Anthropic from "@anthropic-ai/sdk";
+import { logEvent, cors } from "./_db.mjs";
 
 const client = new Anthropic();
-
-const ALLOWED_ORIGINS = [
-  "https://abdullahbadawi1999-collab.github.io",
-  "http://localhost:8766",
-  "http://127.0.0.1:8766",
-];
 
 const SYSTEM = `أنت «المعلم الآلي» في منصة دروس النحو لطلاب الصف الثالث الإعدادي في مصر (أعمارهم حوالي ١٤ سنة).
 
@@ -41,11 +36,7 @@ function tooMany(ip){
 const clip = (s, n) => String(s ?? "").slice(0, n);
 
 export default async function handler(req, res){
-  const origin = req.headers.origin || "";
-  const host = req.headers.host ? `https://${req.headers.host}` : "";
-  if (ALLOWED_ORIGINS.includes(origin) || origin === host) res.setHeader("Access-Control-Allow-Origin", origin);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  cors(req, res);
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
@@ -62,6 +53,9 @@ export default async function handler(req, res){
     .filter(m => m && (m.role === "user" || m.role === "assistant") && typeof m.text === "string")
     .map(m => ({ role: m.role, content: clip(m.text, 1500) }));
   while (history.length && history[0].role !== "user") history.shift();
+
+  // نعدّ السؤال (من غير ما نسجّل نصه)
+  logEvent({ device: body?.device, kind: "tutor", lesson: body?.lessonId, detail: body?.place }).catch(e => console.error("log:", e.message));
 
   const first = `<lesson_context>\nالدرس: ${lesson}\n${context}\n</lesson_context>`;
   const messages = history.length
