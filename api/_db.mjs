@@ -19,6 +19,17 @@ export function ensureTable(){
       detail TEXT
     )`;
     await sql`CREATE INDEX IF NOT EXISTS events_ts ON events (ts)`;
+    // نص رسايل المعلم الآلي وردوده، عشان المعلم يشوفها في صفحة الإحصائيات
+    await sql`CREATE TABLE IF NOT EXISTS tutor_log (
+      id BIGSERIAL PRIMARY KEY,
+      ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+      device TEXT,
+      lesson TEXT,
+      place TEXT,
+      context TEXT,
+      message TEXT NOT NULL,
+      reply TEXT
+    )`;
     return true;
   })().catch(e => { ready = null; throw e; });
   return ready;
@@ -33,6 +44,14 @@ export async function logEvent({ device, kind, lesson, detail }){
   if (!d) return false;
   await ensureTable();
   await sql`INSERT INTO events (device, kind, lesson, detail) VALUES (${d}, ${kind}, ${clip(lesson, 64)}, ${clip(detail, 64)})`;
+  return true;
+}
+
+export async function logTutor({ device, lesson, place, context, message, reply }){
+  if (!sql) return false;
+  await ensureTable();
+  await sql`INSERT INTO tutor_log (device, lesson, place, context, message, reply)
+    VALUES (${clip(device, 64)}, ${clip(lesson, 64)}, ${clip(place, 16)}, ${clip(context, 1500)}, ${clip(message, 600)}, ${clip(reply, 4000)})`;
   return true;
 }
 

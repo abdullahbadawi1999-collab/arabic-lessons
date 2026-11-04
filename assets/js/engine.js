@@ -70,7 +70,7 @@ function tutorBox(context, place){
 }
 function tutorOpen(key){
   document.getElementById(key).innerHTML = `<div class="tutor-chat enter">
-      <div class="tutor-head"><b>المعلم الآلي</b><span>بيرد على أسئلة النحو بس</span></div>
+      <div class="tutor-head"><b>المعلم الآلي</b><span>بيرد على أسئلة النحو بس · أسئلتك بتوصل لمعلمك</span></div>
       <div class="tutor-log"></div>
       <div class="tutor-chips"><button class="chip" data-act="tquick" data-tkey="${key}">مش فاهم، اشرحلي بطريقة أسهل</button></div>
       <div class="tutor-row"><textarea class="tutor-input" rows="2" placeholder="اكتب سؤالك هنا"></textarea><button class="btn" data-act="tsend" data-tkey="${key}">ابعت</button></div>

@@ -1,7 +1,7 @@
 // «اسأل المعلم الآلي»: الموقع بيبعت هنا سؤال الطالب ومعاه اللي قدامه في الدرس (القاعدة أو السؤال أو الإجابة النموذجية)،
 // والدالة دي بتكلّم Claude بالمفتاح السري (ANTHROPIC_API_KEY في إعدادات Vercel) وترجّع الرد. المفتاح عمره ما بيوصل للمتصفح.
 import Anthropic from "@anthropic-ai/sdk";
-import { logEvent, cors } from "./_db.mjs";
+import { logEvent, logTutor, cors } from "./_db.mjs";
 
 const client = new Anthropic();
 
@@ -54,7 +54,7 @@ export default async function handler(req, res){
     .map(m => ({ role: m.role, content: clip(m.text, 1500) }));
   while (history.length && history[0].role !== "user") history.shift();
 
-  // نعدّ السؤال (من غير ما نسجّل نصه)
+  // نعدّ السؤال، ونصه ورده بيتحفظوا تحت في tutor_log عشان المعلم يشوفهم
   logEvent({ device: body?.device, kind: "tutor", lesson: body?.lessonId, detail: body?.place }).catch(e => console.error("log:", e.message));
 
   const first = `<lesson_context>\nالدرس: ${lesson}\n${context}\n</lesson_context>`;
@@ -72,9 +72,12 @@ export default async function handler(req, res){
       fallbacks: "default",
       messages,
     });
-    if (response.stop_reason === "refusal") return res.status(200).json({ reply: "معلش، مقدرش أساعد في ده. اسألني عن أي حاجة في الدرس." });
-    const reply = response.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
-    return res.status(200).json({ reply: reply || "معلش، مقدرتش أرد. جرّب تسأل بطريقة تانية." });
+    const reply = response.stop_reason === "refusal"
+      ? "معلش، مقدرش أساعد في ده. اسألني عن أي حاجة في الدرس."
+      : response.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim() || "معلش، مقدرتش أرد. جرّب تسأل بطريقة تانية.";
+    try { await logTutor({ device: body?.device, lesson: body?.lessonId, place: body?.place, context, message, reply }); }
+    catch (e) { console.error("tutor_log:", e.message); }
+    return res.status(200).json({ reply });
   } catch (error) {
     if (error instanceof Anthropic.RateLimitError) return res.status(429).json({ error: "المعلم الآلي مشغول دلوقتي، جرّب تاني بعد دقيقة." });
     if (error instanceof Anthropic.AuthenticationError) { console.error("bad ANTHROPIC_API_KEY"); return res.status(500).json({ error: "المعلم الآلي مش متاح دلوقتي." }); }

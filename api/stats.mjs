@@ -14,7 +14,10 @@ h1{font-size:24px;margin:8px 0 4px}h2{font-size:17px;margin:26px 0 10px;color:#3
 .card b{display:block;font-size:26px}.card span{font-size:13px;color:#5A6080}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #E2E5F0;border-radius:12px;overflow:hidden}
 th,td{padding:8px 12px;text-align:start;border-bottom:1px solid #E2E5F0;font-size:14.5px}th{background:#F0F2FA;font-size:13px;color:#5A6080}
 form{background:#fff;border:1px solid #E2E5F0;border-radius:14px;padding:18px;margin-top:20px}input{font:inherit;padding:10px;border:1.5px solid #E2E5F0;border-radius:10px;width:100%;box-sizing:border-box;margin:8px 0}
-button{font:inherit;font-weight:700;background:#3A4FD6;color:#fff;border:0;border-radius:10px;padding:10px 20px;cursor:pointer}.err{color:#D93A45}</style></head><body>${body}</body></html>`;
+button{font:inherit;font-weight:700;background:#3A4FD6;color:#fff;border:0;border-radius:10px;padding:10px 20px;cursor:pointer}.err{color:#D93A45}
+.chat{background:#fff;border:1px solid #E2E5F0;border-radius:14px;padding:12px 14px;margin:10px 0}.chat-meta{font-size:13px;color:#5A6080;margin-bottom:6px}.chat-meta b{color:#7A4FD6}
+details{font-size:13px;color:#5A6080;margin-bottom:6px}summary{cursor:pointer}.ctx{background:#F0F2FA;border-radius:8px;padding:6px 10px;margin-top:4px}
+.msg{border-radius:10px;padding:8px 12px;margin-top:6px;font-size:15px}.msg span{display:block;font-size:12px;font-weight:700;color:#5A6080}.msg.me{background:#E8EBFF}.msg.bot{background:#F0F2FA}</style></head><body>${body}</body></html>`;
 
 const form = (msg = "") => page(`<h1>إحصائيات المنصة</h1><form method="post"><label>كلمة السر</label><input type="password" name="key" autofocus>${msg ? `<p class="err">${msg}</p>` : ""}<button>دخول</button></form>`);
 
@@ -50,6 +53,13 @@ export default async function handler(req, res){
   const places = await sql`SELECT detail, COUNT(*) AS n FROM events WHERE kind = 'tutor' AND device NOT LIKE 'claude-test%' GROUP BY detail ORDER BY n DESC`;
   const days = await sql`SELECT (ts AT TIME ZONE 'Africa/Cairo')::date AS day, COUNT(DISTINCT device) AS devices, COUNT(*) FILTER (WHERE kind = 'tutor') AS tutor
     FROM events WHERE ts > now() - interval '14 days' AND device NOT LIKE 'claude-test%' GROUP BY day ORDER BY day DESC`;
+  const chats = await sql`SELECT ts, device, lesson, place, context, message, reply FROM tutor_log
+    WHERE device IS NULL OR device NOT LIKE 'claude-test%' ORDER BY ts DESC LIMIT 200`;
+  // كل جهاز بياخد رقم «طالب ١، ٢…» حسب أول مرة سأل فيها، عشان المعلم يعرف الرسايل اللي من نفس الطالب
+  const studentNo = new Map();
+  [...chats].reverse().forEach(c => { const k = c.device || "?"; if (!studentNo.has(k)) studentNo.set(k, studentNo.size + 1); });
+  const when = ts => new Date(ts).toLocaleString("ar-EG", { timeZone: "Africa/Cairo", weekday: "long", day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
+  const text = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
 
   const card = (n, label) => `<div class="card"><b>${AR(n)}</b><span>${label}</span></div>`;
   const since = tot.since ? new Date(tot.since).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : "—";
@@ -67,5 +77,13 @@ export default async function handler(req, res){
     <h2>آخر ١٤ يوم</h2>
     <table><tr><th>اليوم</th><th>طلاب</th><th>أسئلة للمعلم الآلي</th></tr>
       ${days.map(d => `<tr><td>${esc(new Date(d.day).toLocaleDateString("ar-EG", { weekday: "long", day: "numeric", month: "long" }))}</td><td>${AR(d.devices)}</td><td>${AR(d.tutor)}</td></tr>`).join("") || `<tr><td colspan="3">لسه مفيش بيانات</td></tr>`}
-    </table>`));
+    </table>
+    <h2>رسايل المعلم الآلي</h2>
+    <p class="note">آخر ${AR(chats.length)} رسالة، الأحدث فوق. «طالب ١، ٢…» رقم للجهاز مش اسم، وبيفضل ثابت لنفس الطالب.</p>
+    ${chats.map(c => `<div class="chat">
+      <div class="chat-meta"><b>طالب ${AR(studentNo.get(c.device || "?"))}</b> · ${esc(name(c.lesson))} · ${esc(PLACES[c.place] || c.place || "—")} · <span>${esc(when(c.ts))}</span></div>
+      ${c.context ? `<details><summary>اللي كان قدامه في الصفحة</summary><div class="ctx">${text(c.context)}</div></details>` : ""}
+      <div class="msg me"><span>الطالب:</span>${text(c.message)}</div>
+      <div class="msg bot"><span>المعلم الآلي:</span>${text(c.reply)}</div>
+    </div>`).join("") || `<p class="note">لسه مفيش رسايل.</p>`}`));
 }
