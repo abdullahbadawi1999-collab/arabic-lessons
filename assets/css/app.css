@@ -247,14 +247,14 @@ a.lesson .go{color:var(--acc)}
 .bar>i{background:linear-gradient(90deg, var(--brand), var(--violet))}
 
 
-/* ---------- لمسة عربية: خط الرقعة، وقوس إسلامي، وفاصل بنجمة ---------- */
+/* ---------- لمسة عربية: خط الرقعة، وفاصل بنجمة ---------- */
 :root{--gold:#B8892B}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--gold:#E0B868}}
 :root[data-theme="dark"]{--gold:#E0B868}
 /* العناوين الكبيرة بس بخط الرقعة، والباقي زي ما هو عشان القراية */
 .hero h1{font-family:"Aref Ruqaa", var(--ar);font-weight:700;font-size:40px;line-height:1.45;margin-top:4px}
-/* قوس مدبّب (زي المحراب والمشربية) بدل الدايرة اللي تحت */
-.hero::after{width:96px;height:136px;border:0;border-radius:0;bottom:-6px;left:20px;background:var(--gold);opacity:.28;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='170' viewBox='0 0 120 170'%3E%3Cg fill='none' stroke='black' stroke-width='3'%3E%3Cpath d='M8 170V78Q8 34 60 6Q112 34 112 78V170'/%3E%3Cpath d='M26 170V84Q26 52 60 30Q94 52 94 84V170' stroke-width='2'/%3E%3Crect x='51' y='58' width='18' height='18' transform='rotate(45 60 67)' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='170' viewBox='0 0 120 170'%3E%3Cg fill='none' stroke='black' stroke-width='3'%3E%3Cpath d='M8 170V78Q8 34 60 6Q112 34 112 78V170'/%3E%3Cpath d='M26 170V84Q26 52 60 30Q94 52 94 84V170' stroke-width='2'/%3E%3Crect x='51' y='58' width='18' height='18' transform='rotate(45 60 67)' stroke-width='2'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
+/* القوس الذهبي اتشال بطلب المعلم */
+.hero::after{display:none}
 /* فاصل بنجمة ثمانية بين الهيدر والمحتوى */
 .tiles::before, #list::before{content:"";display:block;grid-column:1/-1;height:18px;margin:2px auto 0;width:min(240px,70%);background:var(--gold);opacity:.55;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='18' viewBox='0 0 240 18'%3E%3Cg fill='black'%3E%3Crect x='10' y='8.4' width='92' height='1.2' rx='.6'/%3E%3Crect x='138' y='8.4' width='92' height='1.2' rx='.6'/%3E%3Crect x='113' y='2' width='14' height='14'/%3E%3Crect x='113' y='2' width='14' height='14' transform='rotate(45 120 9)'/%3E%3Ccircle cx='106' cy='9' r='1.6'/%3E%3Ccircle cx='134' cy='9' r='1.6'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='18' viewBox='0 0 240 18'%3E%3Cg fill='black'%3E%3Crect x='10' y='8.4' width='92' height='1.2' rx='.6'/%3E%3Crect x='138' y='8.4' width='92' height='1.2' rx='.6'/%3E%3Crect x='113' y='2' width='14' height='14'/%3E%3Crect x='113' y='2' width='14' height='14' transform='rotate(45 120 9)'/%3E%3Ccircle cx='106' cy='9' r='1.6'/%3E%3Ccircle cx='134' cy='9' r='1.6'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat}
 #list::before{margin:20px auto 0}
