@@ -210,3 +210,38 @@ a.lesson:hover{border-color:var(--brand)}
 .tutor-input{flex:1;min-width:0;font:inherit;font-size:15.5px;padding:8px 10px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);resize:vertical}
 .tutor-input:focus{border-color:var(--lv-exam);outline:none}
 .tutor-row .btn{min-height:44px;padding:8px 18px}
+
+
+/* ---------- الطبقة البصرية: ألوان هادية وأشكال خفيفة ---------- */
+/* زخرفة نجمة ثمانية خفيفة جدًا في الخلفية، وبقعتين لون في الأركان، وهيدر ملوّن، وألوان بتتغيّر بين الكروت. */
+:root{--wash-1:rgba(58,79,214,.10); --wash-2:rgba(15,154,112,.08); --wash-3:rgba(232,154,0,.10); --violet:#7A4FD6; --violet-soft:#EFEAFE; --hero-1:#EDEFFF; --hero-2:#FFF4E2; --pattern-op:.05}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--wash-1:rgba(142,156,255,.12); --wash-2:rgba(61,211,163,.08); --wash-3:rgba(255,194,77,.08); --violet:#B49CFF; --violet-soft:#2A2350; --hero-1:#1E2346; --hero-2:#272315; --pattern-op:.07;}}
+:root[data-theme="dark"]{--wash-1:rgba(142,156,255,.12); --wash-2:rgba(61,211,163,.08); --wash-3:rgba(255,194,77,.08); --violet:#B49CFF; --violet-soft:#2A2350; --hero-1:#1E2346; --hero-2:#272315; --pattern-op:.07;}
+
+html{background:radial-gradient(70vmax 55vmax at 105% -15%, var(--wash-1), transparent 70%), radial-gradient(60vmax 50vmax at -15% 115%, var(--wash-2), transparent 70%), var(--bg);background-attachment:fixed}
+body{background:transparent}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:var(--brand);opacity:var(--pattern-op);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='black' stroke-width='1.1'%3E%3Crect x='23' y='23' width='26' height='26'/%3E%3Crect x='23' y='23' width='26' height='26' transform='rotate(45 36 36)'/%3E%3Ccircle cx='36' cy='36' r='5'/%3E%3Cpath d='M0 0l8 8M72 0l-8 8M0 72l8-8M72 72l-8-8'/%3E%3C/g%3E%3C/svg%3E") 0 0/72px 72px repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='black' stroke-width='1.1'%3E%3Crect x='23' y='23' width='26' height='26'/%3E%3Crect x='23' y='23' width='26' height='26' transform='rotate(45 36 36)'/%3E%3Ccircle cx='36' cy='36' r='5'/%3E%3Cpath d='M0 0l8 8M72 0l-8 8M0 72l8-8M72 72l-8-8'/%3E%3C/g%3E%3C/svg%3E") 0 0/72px 72px repeat}
+.top{background:color-mix(in srgb, var(--bg) 82%, transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+
+/* الهيدر: كارت بلون فاتح وأشكال دايرية هادية */
+.hero{position:relative;overflow:hidden;margin-top:14px;padding:24px 22px 20px;border-radius:24px;background:linear-gradient(135deg, var(--hero-1), var(--hero-2));border:1px solid var(--line)}
+.hero > *{position:relative}
+.hero::before{content:"";position:absolute;width:190px;height:190px;border-radius:50%;background:var(--wash-1);top:-70px;left:-60px}
+.hero::after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;border:16px solid var(--wash-3);bottom:-80px;left:70px}
+.hero .unit{color:var(--brand)}
+
+/* كل كارت بلون: شريط على الجنب ورقم بنفس اللون */
+.tile, a.lesson{--acc:var(--brand); --acc-soft:var(--brand-soft); border-inline-start:4px solid var(--acc)}
+.tile:nth-child(2), a.lesson:nth-of-type(4n+2){--acc:var(--mint); --acc-soft:var(--mint-soft)}
+.tile:nth-child(3), a.lesson:nth-of-type(4n+3){--acc:var(--sun); --acc-soft:var(--sun-soft)}
+a.lesson:nth-of-type(4n+4){--acc:var(--violet); --acc-soft:var(--violet-soft)}
+.tile .num, a.lesson .num{background:var(--acc-soft);color:var(--acc)}
+.tile:hover, a.lesson:hover{border-color:var(--acc);border-inline-start-color:var(--acc)}
+a.lesson .go{color:var(--acc)}
+.unitname{display:inline-block;background:var(--brand-soft);padding:2px 14px;border-radius:99px}
+.grp{box-shadow:var(--shadow)}
+
+/* الزرار الأساسي بتدرّج خفيف */
+.btn{background:linear-gradient(135deg, var(--brand), var(--violet));box-shadow:0 4px 14px color-mix(in srgb, var(--brand) 25%, transparent)}
+.btn.ghost{box-shadow:none}
+.bar>i{background:linear-gradient(90deg, var(--brand), var(--violet))}
