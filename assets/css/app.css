@@ -271,3 +271,6 @@ a.lesson .go{color:var(--acc)}
 .tnote-q span{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
 .tnote-fix{background:var(--mint-soft);border-radius:12px;padding:10px 12px;font-size:16px}
 .tnote .actions{margin-top:8px}
+.tnote-bot{background:var(--surface-2);border-radius:12px;padding:8px 12px;font-size:15px;border-inline-start:3px solid var(--lv-exam)}
+.tnote-bot span,.tnote-fix span{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
+.tnote-fix span{color:var(--mint)}

@@ -17,7 +17,7 @@ button{font:inherit;font-weight:700;background:#3A4FD6;color:#fff;border:0;borde
 details{font-size:13px;color:#5A6080;margin-bottom:6px}summary{cursor:pointer}.ctx{background:#F0F2FA;border-radius:8px;padding:6px 10px;margin-top:4px}
 .msg{border-radius:10px;padding:8px 12px;margin-top:6px;font-size:15px}.msg span{display:block;font-size:12px;font-weight:700;color:#5A6080}.msg.me{background:#E8EBFF}.msg.bot{background:#F0F2FA}.msg.fix{background:#E1F6EE}.msg.fix i{display:block;font-size:12px;color:#5A6080;font-style:normal;margin-top:4px}
 .chat details.fx{margin:8px 0 0}.chat form{margin:6px 0 0;padding:10px;border-radius:10px}textarea{font:inherit;font-size:15px;width:100%;box-sizing:border-box;min-height:80px;padding:8px 10px;border:1.5px solid #E2E5F0;border-radius:10px;margin-bottom:8px}
-.ok{background:#E1F6EE;color:#0F7A58;border-radius:10px;padding:8px 12px;font-weight:700}</style></head><body>${body}</body></html>`;
+.refresh{margin:10px 0;padding:10px 14px}.ok{background:#E1F6EE;color:#0F7A58;border-radius:10px;padding:8px 12px;font-weight:700}</style></head><body>${body}</body></html>`;
 
 const form = (msg = "") => page(`<h1>إحصائيات المنصة</h1><form method="post"><label>كلمة السر</label><input type="password" name="key" autofocus>${msg ? `<p class="err">${msg}</p>` : ""}<button>دخول</button></form>`);
 
@@ -77,7 +77,7 @@ export default async function handler(req, res){
   const card = (n, label) => `<div class="card"><b>${AR(n)}</b><span>${label}</span></div>`;
   const since = tot.since ? new Date(tot.since).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : "—";
   return res.status(200).send(page(`
-    <h1>إحصائيات المنصة</h1>${saved ? `<p class="ok">${esc(saved)}</p>` : ""}<p class="note">كل جهاز بيتعد مرة واحدة (من غير أسماء). العدّ شغال من ${esc(since)}.</p>
+    <h1>إحصائيات المنصة</h1>${saved ? `<p class="ok">${esc(saved)}</p>` : ""}<form method="post" class="refresh"><input type="hidden" name="key" value="${esc(key)}"><button>حدّث الصفحة</button><span class="note"> عشان تشوف آخر الرسايل، واللي الطلاب شافوه من التصحيحات.</span></form><p class="note">كل جهاز بيتعد مرة واحدة (من غير أسماء). العدّ شغال من ${esc(since)}.</p>
     <h2>الطلاب اللي دخلوا</h2>
     <div class="cards">${card(tot.today, "النهارده")}${card(tot.week, "آخر ٧ أيام")}${card(tot.ever, "من الأول")}</div>
     <h2>اسأل المعلم الآلي</h2>

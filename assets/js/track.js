@@ -24,7 +24,17 @@
   // تصحيحات المعلم: لو المعلم صحّح رد من ردود المعلم الآلي على سؤال الطالب ده، بيظهرله مربع أول ما يفتح المنصة
   if (!on || id === "anon") return;
   function post(body){
-    return fetch(window.API_BASE + "/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    return fetch(window.API_BASE + "/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), keepalive: true });
+  }
+  // «شافه» بتتحفظ على الجهاز لحد ما السيرفر يأكّد إنها وصلت، ولو موصلتش بتتبعت تاني في الزيارة الجاية
+  const PEND = "notesSeen:v1";
+  const pending = () => { try { return JSON.parse(localStorage.getItem(PEND) || "[]"); } catch (e) { return []; } };
+  function markSeen(ids){
+    const all = Array.from(new Set(pending().concat(ids)));
+    try { localStorage.setItem(PEND, JSON.stringify(all)); } catch (e) {}
+    return post({ device: id, seen: all }).then(r => {
+      if (r.ok) { try { localStorage.removeItem(PEND); } catch (e) {} }
+    }).catch(function(){});
   }
   const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const md = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
@@ -36,18 +46,21 @@
       + '<p class="tnote-sub">المعلم راجع ' + (notes.length > 1 ? "أسئلة سألتها" : "سؤال سألته") + ' للمعلم الآلي، وكتبلك التصحيح ده:</p>'
       + notes.map(n => '<div class="tnote-item">'
         + '<div class="tnote-q"><span>سؤالك' + (n.lesson ? " في درس «" + esc(n.lesson) + "»" : "") + ':</span>' + md(n.message) + '</div>'
-        + '<div class="tnote-fix">' + md(n.correction) + '</div></div>').join("")
+        + (n.reply ? '<div class="tnote-bot"><span>رد المعلم الآلي:</span>' + md(n.reply) + '</div>' : '')
+        + '<div class="tnote-fix"><span>تصحيح المعلم:</span>' + md(n.correction) + '</div></div>').join("")
       + '<div class="actions"><button class="btn" type="button">تمام، فهمت</button></div></div>';
     document.body.appendChild(box);
     const btn = box.querySelector("button");
     btn.focus();
     btn.addEventListener("click", function(){
-      post({ device: id, seen: notes.map(n => n.id) }).catch(function(){});
+      markSeen(notes.map(n => n.id));
       box.remove();
     });
   }
   function check(){
-    post({ device: id }).then(r => r.json()).then(j => { if (j && j.notes && j.notes.length) show(j.notes); }).catch(function(){});
+    const left = pending();
+    if (left.length) markSeen([]);
+    post({ device: id }).then(r => r.json()).then(j => { const list = (j && j.notes || []).filter(n => left.indexOf(n.id) < 0); if (list.length) show(list); }).catch(function(){});
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", check); else check();
 })();
