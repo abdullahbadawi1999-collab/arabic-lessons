@@ -30,10 +30,16 @@ export function ensureTable(){
       message TEXT NOT NULL,
       reply TEXT
     )`;
+    // تصحيح المعلم على رد المعلم الآلي: بيظهر للطالب على نفس الجهاز أول ما يفتح المنصة
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS correction TEXT`;
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS corrected_at TIMESTAMPTZ`;
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS seen_at TIMESTAMPTZ`;
     return true;
   })().catch(e => { ready = null; throw e; });
   return ready;
 }
+
+export const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة", "ism-almakan": "اسم المكان" };
 
 export const KINDS = ["visit", "lesson", "discover", "group", "exam", "tutor"];
 const clip = (s, n) => (s == null ? null : String(s).slice(0, n));
