@@ -35,6 +35,8 @@ const unlockOf = g => g.unlockScore ?? L.drill.unlockScore;
 let learnN = 0;
 const LV = new Map(groups.map(g => [g, g.showRule ? (["lv-easy", "lv-med"][learnN++] || "lv-brand") : "lv-hard"]));
 // اسم الجزء اللي بيتكتب أول كل كارت مجموعة: أسئلة الجزء الأول، الثاني، …
+// كلمات التشجيع لما الطالب يجاوب صح: بتتنوّع كل مرة
+const PRAISE = ["صح، برافو!", "مظبوط!", "تمام كده!", "إجابة صح!", "يسّلّااام، أحسنت"];
 const ORD = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
 const partName = i => "أسئلة الجزء " + (ORD[i] || ar(i + 1));
 
@@ -190,7 +192,7 @@ function dAnswer(k){
     D.solved = true;
     btn.classList.add("right");
     app.querySelectorAll(".opt").forEach(b => { b.disabled = true; if (b !== btn) b.classList.add("dim"); });
-    fb.innerHTML = `<div class="fb good enter"><b class="h">صح!</b>${md(o.fb)}${s.after ? `<div style="margin-top:6px">${md(s.after)}</div>` : ""}</div>`;
+    fb.innerHTML = `<div class="fb good enter"><b class="h">${pick(PRAISE)}</b>${md(o.fb)}${s.after ? `<div style="margin-top:6px">${md(s.after)}</div>` : ""}</div>`;
     document.getElementById("dact").innerHTML = `<button class="btn" data-act="dnext" data-focus>كمّل</button>${D.i ? '<button class="btn ghost" data-act="dprev">رجوع</button>' : ""}`;
     document.querySelector('[data-act="dnext"]').focus({ preventScroll: true });
   } else {
@@ -324,7 +326,7 @@ function qAnswer(k){
   save();
   const fb = document.getElementById("qfb");
   if (ok) {
-    fb.innerHTML = `<div class="fb good enter"><b class="h">${pick(["صح، برافو!", "مظبوط!", "تمام كده!", "إجابة صح!"])}</b>${md(q.explain)}</div>`;
+    fb.innerHTML = `<div class="fb good enter"><b class="h">${pick(PRAISE)}</b>${md(q.explain)}</div>`;
   } else {
     const card = document.getElementById("qcard"); card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake");
     fb.innerHTML = `<div class="fb bad enter"><b class="h">مش دي</b>${md(q.options[k].fb)}</div>
