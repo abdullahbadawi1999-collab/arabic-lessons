@@ -62,8 +62,8 @@ export async function logTutor({ device, lesson, place, context, message, reply 
 }
 
 export const ALLOWED_ORIGINS = [
-  "https://abdullahbadawi1999.github.io",
-  "https://abdullahbadawi1999-collab.github.io", // الاسم القديم لحساب GitHub
+  "https://abdullahbadawi1999.github.io", // لو الاسم اتغيّر تاني
+  "https://abdullahbadawi1999-collab.github.io", // اسم حساب GitHub الحالي (اترجع للاسم ده)
   "http://localhost:8766",
   "http://127.0.0.1:8766",
 ];

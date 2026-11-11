@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://abdullahbadawi1999.github.io/arabic-lessons/schema/lesson.schema.json",
+  "$id": "https://abdullahbadawi1999-collab.github.io/arabic-lessons/schema/lesson.schema.json",
   "title": "ملف محتوى درس (lessons/<id>.json)",
   "description": "شكل ملف الدرس اللي بيقراه lesson.html. القواعد اللي محتاجة مقارنة بين أكتر من حقل (زي tag ليه reserve، ومفيش اختيارات مكررة) في scripts/validate.mjs.",
   "type": "object",
