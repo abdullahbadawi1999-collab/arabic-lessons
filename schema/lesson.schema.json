@@ -26,6 +26,11 @@
         "caption": { "$ref": "#/$defs/text" }
       }
     },
+    "video": {
+      "description": "رابط فيديو شرح الدرس (درايف أو غيره). لو موجود بتظهر خانة «فيديو شرح الدرس» في صفحة الدرس وبتفتح الرابط في تاب جديد.",
+      "type": "string",
+      "pattern": "^https://"
+    },
     "discover": {
       "type": "array",
       "minItems": 1,

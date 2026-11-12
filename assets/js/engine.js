@@ -36,7 +36,7 @@ let learnN = 0;
 const LV = new Map(groups.map(g => [g, g.showRule ? (["lv-easy", "lv-med"][learnN++] || "lv-brand") : "lv-hard"]));
 // اسم الجزء اللي بيتكتب أول كل كارت مجموعة: أسئلة الجزء الأول، الثاني، …
 // كلمات التشجيع لما الطالب يجاوب صح: بتتنوّع كل مرة
-const PRAISE = ["صح، برافو!", "تمام كده!", "إجابة صح!", "يسّلّااام، أحسنت"];
+const PRAISE = ["صح، برافو!", "تمام كده!", "إجابة صح!", "يسّلّااام، أحسنت", "يسّلّااام، أحسنت"]; // متكررة عشان تظهر أكتر
 const ORD = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
 const partName = i => "أسئلة الجزء " + (ORD[i] || ar(i + 1));
 
@@ -133,6 +133,10 @@ function home(){
     ${patternBlock(L.pattern)}
   </div>
   <div class="tiles">
+    ${L.video ? `<a class="tile video" href="${esc(L.video)}" target="_blank" rel="noopener" data-video>
+      <span class="num" aria-hidden="true">▶</span>
+      <span class="tx"><b>فيديو شرح الدرس</b><span>اتفرج على شرح المعلم للدرس</span></span>
+    </a>` : ""}
     <button class="tile" data-act="discover" data-focus>
       <span class="num">١</span>
       <span class="tx"><b>اكتشف القاعدة</b><span>${ar(FLAT.length)} خطوة قصيرة · بتوصل للقاعدة بنفسك</span></span>
@@ -431,6 +435,7 @@ function summary(){
 
 /* ---------- الأحداث ---------- */
 app.addEventListener("click", e => {
+  if (e.target.closest("[data-video]")) return track("video", L.id);
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.dopt != null) return dAnswer(+b.dataset.dopt);
   if (b.dataset.qopt != null) return qAnswer(+b.dataset.qopt);

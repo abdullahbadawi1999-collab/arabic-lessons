@@ -58,6 +58,7 @@ export default async function handler(req, res){
   const lessons = await sql`SELECT lesson,
       COUNT(DISTINCT device) FILTER (WHERE kind = 'lesson') AS devices,
       COUNT(*) FILTER (WHERE kind = 'lesson') AS opens,
+      COUNT(*) FILTER (WHERE kind = 'video') AS videos,
       COUNT(*) FILTER (WHERE kind = 'group') AS groups,
       COUNT(*) FILTER (WHERE kind = 'exam') AS exams,
       COUNT(*) FILTER (WHERE kind = 'tutor') AS tutor,
@@ -84,8 +85,8 @@ export default async function handler(req, res){
     <div class="cards">${card(tot.tutor_all, "سؤال من الأول")}${card(tot.tutor_week, "سؤال في آخر ٧ أيام")}${card(tot.tutor_devices, "طالب استخدمه")}</div>
     ${places.length ? `<table style="margin-top:10px"><tr><th>المكان</th><th>عدد الأسئلة</th></tr>${places.map(p => `<tr><td>${esc(PLACES[p.detail] || p.detail || "—")}</td><td>${AR(p.n)}</td></tr>`).join("")}</table>` : ""}
     <h2>الدروس</h2>
-    <table><tr><th>الدرس</th><th>طلاب فتحوه</th><th>مرات الفتح</th><th>مجموعات اتحلت</th><th>نماذج امتحان</th><th>أسئلة للمعلم الآلي</th></tr>
-      ${lessons.map(l => `<tr><td>${esc(name(l.lesson))}</td><td>${AR(l.devices)}</td><td>${AR(l.opens)}</td><td>${AR(l.groups)}</td><td>${AR(l.exams)}</td><td>${AR(l.tutor)} (${AR(l.tutor_devices)} طالب)</td></tr>`).join("") || `<tr><td colspan="6">لسه مفيش بيانات</td></tr>`}
+    <table><tr><th>الدرس</th><th>طلاب فتحوه</th><th>مرات الفتح</th><th>فتحوا الفيديو</th><th>مجموعات اتحلت</th><th>نماذج امتحان</th><th>أسئلة للمعلم الآلي</th></tr>
+      ${lessons.map(l => `<tr><td>${esc(name(l.lesson))}</td><td>${AR(l.devices)}</td><td>${AR(l.opens)}</td><td>${AR(l.videos)}</td><td>${AR(l.groups)}</td><td>${AR(l.exams)}</td><td>${AR(l.tutor)} (${AR(l.tutor_devices)} طالب)</td></tr>`).join("") || `<tr><td colspan="7">لسه مفيش بيانات</td></tr>`}
     </table>
     <h2>آخر ١٤ يوم</h2>
     <table><tr><th>اليوم</th><th>طلاب</th><th>أسئلة للمعلم الآلي</th></tr>

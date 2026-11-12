@@ -232,8 +232,8 @@ body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;bac
 
 /* كل كارت بلون: شريط على الجنب ورقم بنفس اللون */
 .tile, a.lesson{--acc:var(--brand); --acc-soft:var(--brand-soft); border-inline-start:4px solid var(--acc)}
-.tile:nth-child(2), a.lesson:nth-of-type(4n+2){--acc:var(--mint); --acc-soft:var(--mint-soft)}
-.tile:nth-child(3), a.lesson:nth-of-type(4n+3){--acc:var(--sun); --acc-soft:var(--sun-soft)}
+button.tile:nth-of-type(2), a.lesson:nth-of-type(4n+2){--acc:var(--mint); --acc-soft:var(--mint-soft)}
+button.tile:nth-of-type(3), a.lesson:nth-of-type(4n+3){--acc:var(--sun); --acc-soft:var(--sun-soft)}
 a.lesson:nth-of-type(4n+4){--acc:var(--violet); --acc-soft:var(--violet-soft)}
 .tile .num, a.lesson .num{background:var(--acc-soft);color:var(--acc)}
 .tile:hover, a.lesson:hover{border-color:var(--acc);border-inline-start-color:var(--acc)}
@@ -274,3 +274,7 @@ a.lesson .go{color:var(--acc)}
 .tnote-bot{background:var(--surface-2);border-radius:12px;padding:8px 12px;font-size:15px;border-inline-start:3px solid var(--lv-exam)}
 .tnote-bot span,.tnote-fix span{display:block;font-size:12.5px;font-weight:700;color:var(--muted)}
 .tnote-fix span{color:var(--mint)}
+
+/* خانة فيديو شرح الدرس: رابط درايف بيفتح في تاب جديد */
+a.tile.video{--acc:var(--coral); --acc-soft:var(--rose-soft); color:inherit; text-decoration:none}
+a.tile.video .num{font-size:16px}
