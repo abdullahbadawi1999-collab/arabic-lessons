@@ -1,5 +1,10 @@
 {
   "functions": {
-    "api/ask.mjs": { "maxDuration": 60 }
+    "api/ask.mjs": {
+      "maxDuration": 60
+    },
+    "api/stats.mjs": {
+      "includeFiles": "lessons/*.json"
+    }
   }
 }

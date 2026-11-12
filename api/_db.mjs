@@ -41,7 +41,7 @@ export function ensureTable(){
 
 export const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة", "ism-almakan": "اسم المكان" };
 
-export const KINDS = ["visit", "lesson", "video", "discover", "group", "exam", "tutor"];
+export const KINDS = ["visit", "lesson", "video", "discover", "group", "groupdone", "discoverdone", "exam", "tutor"];
 const clip = (s, n) => (s == null ? null : String(s).slice(0, n));
 
 export async function logEvent({ device, kind, lesson, detail }){

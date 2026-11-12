@@ -206,7 +206,7 @@ function dAnswer(k){
   }
 }
 function dNext(){
-  if (D.i >= FLAT.length - 1) { P.discoverDone = true; P.discoverAt = 0; save(); return discoverEnd(); }
+  if (D.i >= FLAT.length - 1) { track("discoverdone", L.id); P.discoverDone = true; P.discoverAt = 0; save(); return discoverEnd(); }
   discover(D.i + 1);
 }
 function discoverEnd(){
@@ -394,6 +394,7 @@ function finishGroup(){
   const g = Z.g, n = g.questions.length, s = Z.score;
   const st = (P.groups[g.id] = P.groups[g.id] || { best: null, attempts: 0 });
   st.attempts++; st.best = Math.max(st.best == null ? 0 : st.best, s); save();
+  track("groupdone", L.id, g.id + ":" + s + "/" + n);
   const unlock = unlockOf(g), pass = s >= unlock;
   const next = Z.gi + 1 < groups.length ? Z.gi + 1 : null;
   const C = 2 * Math.PI * 54, frac = s / n;
