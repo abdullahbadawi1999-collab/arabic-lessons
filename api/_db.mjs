@@ -34,6 +34,14 @@ export function ensureTable(){
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS correction TEXT`;
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS corrected_at TIMESTAMPTZ`;
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS seen_at TIMESTAMPTZ`;
+    // «قول ملاحظاتك»: رسايل الطلاب للمعلم من الصفحة الرئيسية (الاسم اختياري)
+    await sql`CREATE TABLE IF NOT EXISTS feedback (
+      id BIGSERIAL PRIMARY KEY,
+      ts TIMESTAMPTZ NOT NULL DEFAULT now(),
+      device TEXT,
+      name TEXT,
+      message TEXT NOT NULL
+    )`;
     return true;
   })().catch(e => { ready = null; throw e; });
   return ready;

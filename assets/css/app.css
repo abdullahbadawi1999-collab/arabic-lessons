@@ -278,3 +278,16 @@ a.lesson .go{color:var(--acc)}
 /* خانة فيديو شرح الدرس: رابط درايف بيفتح في تاب جديد */
 a.tile.video{--acc:var(--coral); --acc-soft:var(--rose-soft); color:inherit; text-decoration:none}
 a.tile.video .num{font-size:16px}
+
+/* «قول ملاحظاتك» في آخر الصفحة الرئيسية */
+.fbk{margin-top:30px;background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--mint);border-radius:var(--r);box-shadow:var(--shadow)}
+.fbk-open{display:flex;align-items:center;gap:14px;width:100%;background:none;border:0;padding:16px;cursor:pointer;text-align:start}
+.fbk-open .ic{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:20px;background:var(--mint-soft);color:var(--mint)}
+.fbk-open .tx{flex:1;min-width:0}.fbk-open .tx b{display:block;font-size:17px}.fbk-open .tx span{font-size:13.5px;color:var(--muted)}
+.fbk-open .go{color:var(--mint);font-weight:700;transition:transform .2s}.fbk.on .fbk-open .go{transform:rotate(-90deg)}
+.fbk-form{padding:0 16px 16px;display:grid;gap:8px}
+.fbk-form label{font-size:14.5px;font-weight:600}.fbk-form .fbk-opt{color:var(--muted);font-weight:400}
+.fbk-form textarea,.fbk-form input{font:inherit;font-size:15.5px;width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface-2);color:var(--ink);resize:vertical}
+.fbk-form textarea:focus,.fbk-form input:focus{border-color:var(--mint);outline:none}
+.fbk-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
+.fbk-status{font-size:14px}.fbk-status.good{color:var(--mint);font-weight:700}.fbk-status.bad{color:var(--rose)}

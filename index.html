@@ -15,6 +15,16 @@
   <div class="pattern word"><span>المشتقات</span></div>
   <div class="pattern-cap">اختار الدرس، واكتشف القاعدة بنفسك، وبعدين اتدرب.</div></div>
   <div id="list"><p class="note">بيحمّل الدروس…</p></div>
+  <section class="fbk" id="fbk">
+    <button class="fbk-open" type="button" aria-expanded="false" aria-controls="fbk-form"><span class="ic" aria-hidden="true">✉</span><span class="tx"><b>قول ملاحظاتك</b><span>ابعت أي رسالة أو ملحوظة للمعلم</span></span><span class="go" aria-hidden="true">←</span></button>
+    <form id="fbk-form" class="fbk-form" hidden>
+      <label for="fbk-msg">قول أي ملحوظة عندك عايز تقولها للمدرس مسؤول المنصة التفاعلية دي</label>
+      <textarea id="fbk-msg" rows="4" maxlength="2000" placeholder="اكتب رسالتك هنا…"></textarea>
+      <label for="fbk-name">الاسم <span class="fbk-opt">(اختياري)</span></label>
+      <input id="fbk-name" type="text" maxlength="80" autocomplete="off" placeholder="ممكن تسيبه فاضي">
+      <div class="fbk-row"><button class="btn" type="submit">ابعت</button><span class="fbk-status" role="status" aria-live="polite"></span></div>
+    </form>
+  </section>
 </div>
 <script src="assets/js/track.js"></script>
 <script>
@@ -26,6 +36,33 @@ fetch("lessons/index.json",{cache:"no-cache"}).then(r=>r.json()).then(c=>{
     ?`<a class="lesson" href="lesson.html?id=${encodeURIComponent(l.id)}"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span><span class="go">ابدأ ←</span></a>`
     :`<div class="lesson soon"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span></div>`).join("")}`).join("")}</section>`).join("");
 }).catch(()=>{document.getElementById("list").innerHTML='<p class="note">مقدرناش نحمّل قايمة الدروس. حدّث الصفحة.</p>';});
+
+// «قول ملاحظاتك»: الرسالة بتروح للمعلم وبتظهر في صفحة الإحصائيات
+(function(){
+  const box = document.getElementById("fbk"), open = box.querySelector(".fbk-open"), form = box.querySelector("form");
+  const msg = form.querySelector("#fbk-msg"), name = form.querySelector("#fbk-name"), send = form.querySelector("button"), st = form.querySelector(".fbk-status");
+  open.addEventListener("click", () => {
+    const show = form.hidden;
+    form.hidden = !show; open.setAttribute("aria-expanded", String(show)); box.classList.toggle("on", show);
+    if (show) msg.focus();
+  });
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const text = msg.value.trim();
+    if (!text) { st.textContent = "اكتب ملاحظتك الأول."; st.className = "fbk-status bad"; msg.focus(); return; }
+    send.disabled = true; st.textContent = "بيتبعت…"; st.className = "fbk-status";
+    fetch(window.API_BASE + "/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ device: window.deviceId, name: name.value.trim(), message: text }) })
+      .then(r => r.json().catch(() => ({})).then(j => ({ ok: r.ok, j })))
+      .then(({ ok, j }) => {
+        if (!ok || !j.ok) throw new Error(j && j.error || "");
+        msg.value = ""; name.value = "";
+        st.textContent = "وصلت، شكرًا! المعلم هيقرا رسالتك."; st.className = "fbk-status good";
+      })
+      .catch(err => { st.textContent = (err && /[؀-ۿ]/.test(err.message) && err.message) || "مقدرناش نبعت دلوقتي، جرّب تاني بعد شوية."; st.className = "fbk-status bad"; })
+      .finally(() => { send.disabled = false; });
+  });
+})();
 </script>
 </body>
 </html>

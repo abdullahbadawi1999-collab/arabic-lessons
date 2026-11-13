@@ -133,6 +133,10 @@ export default async function handler(req, res){
   };
   const todayIds = Object.keys(LESSONS).filter(id => byLesson.has(id)).concat([...byLesson.keys()].filter(id => !LESSONS[id]));
 
+  // ===== ملاحظات الطلاب («قول ملاحظاتك» في الصفحة الرئيسية) =====
+  const notes = await sql`SELECT id, ts, name, message FROM feedback
+    WHERE device IS NULL OR device NOT LIKE 'claude-test%' ORDER BY ts DESC LIMIT 200`;
+
   // ===== رسايل المعلم الآلي: النهارده بس، وزرار يعرض القديم =====
   const showAll = field("all") === "1";
   const openId = Number(field("id")) || null;
@@ -162,6 +166,9 @@ export default async function handler(req, res){
     <h2>الدروس النهارده بالتفصيل</h2>
     <p class="note">«بدأها» يعني دخل المجموعة، و«خلّصها» يعني جاوب على كل أسئلتها، ودرجته جنبها (تسجيل «خلّصها» والدرجات شغال من ١٢ نوفمبر).</p>
     ${todayIds.length ? todayIds.map(lessonToday).join("") : `<p class="note">النهارده لسه محدش فتح أي درس.</p>`}
+    <h2>ملاحظات الطلاب</h2>
+    <p class="note">اللي الطلاب كتبوه في «قول ملاحظاتك» في الصفحة الرئيسية، الأحدث فوق.</p>
+    ${notes.length ? notes.map(n => `<div class="chat"><div class="chat-meta"><b>${n.name ? esc(n.name) : "من غير اسم"}</b> · <span>${esc(when(n.ts))}</span></div><div class="msg me">${text(n.message)}</div></div>`).join("") : `<p class="note">لسه محدش بعت ملاحظات.</p>`}
     <h2>اسأل المعلم الآلي</h2>
     <div class="cards">${card(tot.tutor_all, "سؤال من الأول")}${card(tot.tutor_week, "سؤال في آخر ٧ أيام")}${card(tot.tutor_devices, "طالب استخدمه")}</div>
     ${places.length ? `<table style="margin-top:10px"><tr><th>المكان</th><th>عدد الأسئلة</th></tr>${places.map(p => `<tr><td>${esc(PLACES[p.detail] || p.detail || "—")}</td><td>${AR(p.n)}</td></tr>`).join("")}</table>` : ""}
