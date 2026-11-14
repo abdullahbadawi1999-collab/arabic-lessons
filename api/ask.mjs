@@ -87,7 +87,9 @@ export default async function handler(req, res){
     const reply = response.stop_reason === "refusal"
       ? "معلش، مقدرش أساعد في ده. اسألني عن أي حاجة في الدرس."
       : response.content.filter(b => b.type === "text").map(b => b.text).join("\n").trim() || "معلش، مقدرتش أرد. جرّب تسأل بطريقة تانية.";
-    try { await logTutor({ device: body?.device, lesson: body?.lessonId, place: body?.place, context, message, reply }); }
+    const u = response.usage || {};
+    const inputTokens = (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) + (u.cache_read_input_tokens || 0);
+    try { await logTutor({ device: body?.device, lesson: body?.lessonId, place: body?.place, context, message, reply, model: response.model, inputTokens, outputTokens: u.output_tokens }); }
     catch (e) { console.error("tutor_log:", e.message); }
     return res.status(200).json({ reply });
   } catch (error) {

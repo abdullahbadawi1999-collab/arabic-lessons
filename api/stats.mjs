@@ -1,7 +1,10 @@
 // صفحة الإحصائيات للمعلم (أجهزة التجربة اللي بتبدأ بـ claude-test مش بتتعد): محمية بكلمة سر (STATS_KEY في إعدادات Vercel).
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { sql, ensureTable, LESSONS } from "./_db.mjs";
+import { sql, ensureTable, LESSONS, costUSD } from "./_db.mjs";
+
+// سعر الدولار بالجنيه للعرض بس (تقريبي) — غيّره لو السعر اتغيّر
+const EGP_PER_USD = 50;
 
 // أسماء المجموعات ونماذج الامتحان بتتقري من ملفات الدروس نفسها (vercel.json بيضمّها للدالة)
 const ORD = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
@@ -43,7 +46,7 @@ details{font-size:13px;color:#5A6080;margin-bottom:6px}summary{cursor:pointer}.c
 details.chat{font-size:inherit;color:inherit;margin:8px 0;padding:0}details.chat>summary{cursor:pointer;list-style:none;padding:10px 14px}details.chat>summary::-webkit-details-marker{display:none}
 details.chat[open]>summary{border-bottom:1px solid #E2E5F0}details.chat>:not(summary){margin-inline:14px}details.chat>:last-child{margin-bottom:12px}
 details.chat .chat-meta{margin:0}details.chat .q{font-size:15.5px;font-weight:600}details.chat .q::before{content:"◂ ";color:#3A4FD6}details.chat[open] .q::before{content:"▾ "}
-.tag{background:#E1F6EE;color:#0F7A58;border-radius:99px;padding:0 8px;font-weight:700}.msg.ctx{background:#FFF8E6}.ok{background:#E1F6EE;color:#0F7A58;border-radius:10px;padding:8px 12px;font-weight:700}</style></head><body>${body}</body></html>`;
+.cost{font-size:12.5px;color:#5A6080;background:#F0F2FA;border-radius:8px;padding:4px 10px;margin-top:8px;display:inline-block}.tag{background:#E1F6EE;color:#0F7A58;border-radius:99px;padding:0 8px;font-weight:700}.msg.ctx{background:#FFF8E6}.ok{background:#E1F6EE;color:#0F7A58;border-radius:10px;padding:8px 12px;font-weight:700}</style></head><body>${body}</body></html>`;
 
 const form = (msg = "") => page(`<h1>إحصائيات المنصة</h1><form method="post"><label>كلمة السر</label><input type="password" name="key" autofocus>${msg ? `<p class="err">${msg}</p>` : ""}<button>دخول</button></form>`);
 
@@ -133,6 +136,20 @@ export default async function handler(req, res){
   };
   const todayIds = Object.keys(LESSONS).filter(id => byLesson.has(id)).concat([...byLesson.keys()].filter(id => !LESSONS[id]));
 
+  // ===== تكلفة المعلم الآلي (الردود اللي اتسجّل معاها عدد التوكنز بس) =====
+  const costRows = await sql`SELECT model,
+      (ts AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date AS today,
+      ts > now() - interval '7 days' AS week,
+      date_trunc('month', ts AT TIME ZONE 'Africa/Cairo') = date_trunc('month', now() AT TIME ZONE 'Africa/Cairo') AS month,
+      COUNT(*) AS n, SUM(input_tokens) AS inp, SUM(output_tokens) AS outp
+    FROM tutor_log WHERE output_tokens IS NOT NULL AND (device IS NULL OR device NOT LIKE 'claude-test%')
+    GROUP BY 1, 2, 3, 4`;
+  const bucket = key => costRows.filter(r => key === "all" || r[key]).reduce((a, r) => ({ n: a.n + Number(r.n), usd: a.usd + costUSD(r.model, Number(r.inp), Number(r.outp)) }), { n: 0, usd: 0 });
+  const C = { today: bucket("today"), week: bucket("week"), month: bucket("month"), all: bucket("all") };
+  const money = usd => usd < 1 ? `${AR((usd * 100).toFixed(1))} سنت` : `${AR(usd.toFixed(2))} دولار`;
+  const egp = usd => `≈ ${AR((usd * EGP_PER_USD).toFixed(usd * EGP_PER_USD < 10 ? 1 : 0))} جنيه`;
+  const costCard = (b, label) => `<div class="card"><b>${b.n ? money(b.usd) : "—"}</b><span>${label}${b.n ? ` · ${egp(b.usd)} · ${AR(b.n)} سؤال` : ""}</span></div>`;
+
   // ===== ملاحظات الطلاب («قول ملاحظاتك» في الصفحة الرئيسية) =====
   const notes = await sql`SELECT id, ts, name, message FROM feedback
     WHERE device IS NULL OR device NOT LIKE 'claude-test%' ORDER BY ts DESC LIMIT 200`;
@@ -141,9 +158,9 @@ export default async function handler(req, res){
   const showAll = field("all") === "1";
   const openId = Number(field("id")) || null;
   const chats = showAll
-    ? await sql`SELECT id, ts, device, lesson, place, context, message, reply, correction, seen_at FROM tutor_log
+    ? await sql`SELECT id, ts, device, lesson, place, context, message, reply, correction, seen_at, model, input_tokens, output_tokens FROM tutor_log
         WHERE device IS NULL OR device NOT LIKE 'claude-test%' ORDER BY ts DESC LIMIT 300`
-    : await sql`SELECT id, ts, device, lesson, place, context, message, reply, correction, seen_at FROM tutor_log
+    : await sql`SELECT id, ts, device, lesson, place, context, message, reply, correction, seen_at, model, input_tokens, output_tokens FROM tutor_log
         WHERE (device IS NULL OR device NOT LIKE 'claude-test%')
           AND (ts AT TIME ZONE 'Africa/Cairo')::date = (now() AT TIME ZONE 'Africa/Cairo')::date ORDER BY ts DESC`;
   // كل جهاز بياخد رقم «طالب ١، ٢…» حسب أول مرة سأل فيها (من الأول خالص)، فالرقم بيفضل ثابت في النهارده والقديم
@@ -171,6 +188,9 @@ export default async function handler(req, res){
     ${notes.length ? notes.map(n => `<div class="chat"><div class="chat-meta"><b>${n.name ? esc(n.name) : "من غير اسم"}</b> · <span>${esc(when(n.ts))}</span></div><div class="msg me">${text(n.message)}</div></div>`).join("") : `<p class="note">لسه محدش بعت ملاحظات.</p>`}
     <h2>اسأل المعلم الآلي</h2>
     <div class="cards">${card(tot.tutor_all, "سؤال من الأول")}${card(tot.tutor_week, "سؤال في آخر ٧ أيام")}${card(tot.tutor_devices, "طالب استخدمه")}</div>
+    <h2>تكلفة المعلم الآلي</h2>
+    <div class="cards">${costCard(C.today, "النهارده")}${costCard(C.week, "آخر ٧ أيام")}${costCard(C.month, "الشهر ده")}</div>
+    <p class="note">${C.all.n ? `متوسط السؤال الواحد: ${money(C.all.usd / C.all.n)} (${egp(C.all.usd / C.all.n)}). ` : ""}التكلفة محسوبة من عدد التوكنز اللي اتسجّل مع كل رد (شغال من ١٤ نوفمبر)، والجنيه تقريبي على أساس ${AR(EGP_PER_USD)} جنيه للدولار. المصروف الرسمي في صفحة Usage في حساب Anthropic.</p>
     ${places.length ? `<table style="margin-top:10px"><tr><th>المكان</th><th>عدد الأسئلة</th></tr>${places.map(p => `<tr><td>${esc(PLACES[p.detail] || p.detail || "—")}</td><td>${AR(p.n)}</td></tr>`).join("")}</table>` : ""}
     <h2>الدروس من الأول</h2>
     <table><tr><th>الدرس</th><th>طلاب فتحوه</th><th>مرات الفتح</th><th>فتحوا الفيديو</th><th>مجموعات اتحلت</th><th>نماذج امتحان</th><th>أسئلة للمعلم الآلي</th></tr>
@@ -185,6 +205,7 @@ export default async function handler(req, res){
     ${chats.map(c => `<details class="chat" id="c${c.id}"${openId === Number(c.id) ? " open" : ""}>
       <summary><div class="chat-meta"><b>طالب ${AR(studentNo.get(c.device || "?") || "؟")}</b> · ${esc(name(c.lesson))} · ${esc(PLACES[c.place] || c.place || "—")} · <span>${esc(showAll ? when(c.ts) : clock(c.ts))}</span>${c.correction ? ` · <span class="tag">${c.seen_at ? "صحّحته والطالب شافه" : "صحّحته"}</span>` : ""}</div>
         <div class="q">${text(c.message)}</div></summary>
+      ${c.output_tokens != null ? `<div class="cost">تكلفة الرد: ${money(costUSD(c.model, c.input_tokens, c.output_tokens))} (${egp(costUSD(c.model, c.input_tokens, c.output_tokens))}) · ${AR(c.input_tokens)} توكن اتبعت · ${AR(c.output_tokens)} توكن اتكتب (مع التفكير) · ${esc(c.model || "")}</div>` : ""}
       ${c.context ? `<div class="msg ctx"><span>موضع السؤال (اللي كان قدام الطالب في الصفحة):</span>${text(c.context)}</div>` : ""}
       <div class="msg bot"><span>رد المعلم الآلي:</span>${text(c.reply)}</div>
       ${c.correction ? `<div class="msg fix"><span>تصحيحك:</span>${text(c.correction)}<i>${c.seen_at ? "الطالب شافه " + esc(when(c.seen_at)) : "لسه الطالب ما شافهوش"}</i></div>` : ""}

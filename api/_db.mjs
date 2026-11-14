@@ -34,6 +34,10 @@ export function ensureTable(){
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS correction TEXT`;
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS corrected_at TIMESTAMPTZ`;
     await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS seen_at TIMESTAMPTZ`;
+    // الموديل اللي رد وعدد التوكنز، عشان صفحة الإحصائيات تحسب التكلفة
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS model TEXT`;
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS input_tokens INTEGER`;
+    await sql`ALTER TABLE tutor_log ADD COLUMN IF NOT EXISTS output_tokens INTEGER`;
     // «قول ملاحظاتك»: رسايل الطلاب للمعلم من الصفحة الرئيسية (الاسم اختياري)
     await sql`CREATE TABLE IF NOT EXISTS feedback (
       id BIGSERIAL PRIMARY KEY,
@@ -49,6 +53,10 @@ export function ensureTable(){
 
 export const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة", "ism-almakan": "اسم المكان" };
 
+// سعر الموديلات بالدولار لكل مليون توكن [اللي بيتبعت، اللي بيتكتب] — التفكير بيتحسب مع اللي بيتكتب
+export const PRICES = { "claude-opus-5-5": [4, 20], "claude-opus-5": [5, 25], "claude-opus-4-8": [5, 25], "claude-sonnet-5-5": [2, 10], "claude-sonnet-5": [2, 10], "claude-haiku-5-5": [0.1, 0.5] };
+export const costUSD = (model, inTok, outTok) => { const [i, o] = PRICES[model] || PRICES["claude-opus-5-5"]; return ((inTok || 0) * i + (outTok || 0) * o) / 1e6; };
+
 export const KINDS = ["visit", "lesson", "video", "discover", "group", "groupdone", "discoverdone", "exam", "tutor"];
 const clip = (s, n) => (s == null ? null : String(s).slice(0, n));
 
@@ -61,11 +69,12 @@ export async function logEvent({ device, kind, lesson, detail }){
   return true;
 }
 
-export async function logTutor({ device, lesson, place, context, message, reply }){
+export async function logTutor({ device, lesson, place, context, message, reply, model, inputTokens, outputTokens }){
   if (!sql) return false;
   await ensureTable();
-  await sql`INSERT INTO tutor_log (device, lesson, place, context, message, reply)
-    VALUES (${clip(device, 64)}, ${clip(lesson, 64)}, ${clip(place, 16)}, ${clip(context, 1500)}, ${clip(message, 600)}, ${clip(reply, 4000)})`;
+  const int = n => (Number.isFinite(n) ? Math.round(n) : null);
+  await sql`INSERT INTO tutor_log (device, lesson, place, context, message, reply, model, input_tokens, output_tokens)
+    VALUES (${clip(device, 64)}, ${clip(lesson, 64)}, ${clip(place, 16)}, ${clip(context, 1500)}, ${clip(message, 600)}, ${clip(reply, 4000)}, ${clip(model, 64)}, ${int(inputTokens)}, ${int(outputTokens)})`;
   return true;
 }
 
