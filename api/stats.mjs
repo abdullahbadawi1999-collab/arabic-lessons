@@ -24,10 +24,10 @@ function lessonMeta(id){
   }
   return metaCache.get(id);
 }
-const PLACES = { rule: "تحت القاعدة", drill: "في التدريبات", exam: "في نماذج الامتحان" };
+const PLACES = { rule: "تحت القاعدة", drill: "في التدريبات", exam: "في نماذج الامتحان", home: "من الصفحة الرئيسية" };
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const AR = n => String(n).replace(/\d/g, d => "٠١٢٣٤٥٦٧٨٩"[d]);
-const name = id => LESSONS[id] || id || "—";
+const name = id => LESSONS[id] || (id === "home" ? "الصفحة الرئيسية" : id) || "—";
 
 const page = (body) => `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>إحصائيات المنصة</title>
 <style>body{font-family:"Segoe UI",Tahoma,sans-serif;max-width:760px;margin:0 auto;padding:20px 16px 40px;background:#F5F6FB;color:#161A33;line-height:1.7}
@@ -134,7 +134,7 @@ export default async function handler(req, res){
     lines.push(`<li><b>أسئلة للمعلم الآلي:</b> ${tutor ? `${count(tutor.n, "سؤال", "سؤال واحد", "سؤالين", "أسئلة")} (${count(tutor.d, "طالب", "طالب واحد", "طالبين", "طلاب")})` : "مفيش"}</li>`);
     return `<div class="today"><h3>${esc(name(id))}</h3><p class="note">${open ? `اتفتح ${times(open.n, open.d)}` : "متفتحش من صفحة الدرس النهارده"}</p><ul>${lines.join("")}</ul></div>`;
   };
-  const todayIds = Object.keys(LESSONS).filter(id => byLesson.has(id)).concat([...byLesson.keys()].filter(id => !LESSONS[id]));
+  const todayIds = Object.keys(LESSONS).filter(id => byLesson.has(id)).concat([...byLesson.keys()].filter(id => !LESSONS[id] && id !== "home"));
 
   // ===== تكلفة المعلم الآلي (الردود اللي اتسجّل معاها عدد التوكنز بس) =====
   const costRows = await sql`SELECT model,

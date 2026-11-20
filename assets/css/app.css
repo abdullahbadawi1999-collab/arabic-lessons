@@ -291,3 +291,14 @@ a.tile.video .num{font-size:16px}
 .fbk-form textarea:focus,.fbk-form input:focus{border-color:var(--mint);outline:none}
 .fbk-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px}
 .fbk-status{font-size:14px}.fbk-status.good{color:var(--mint);font-weight:700}.fbk-status.bad{color:var(--rose)}
+
+/* «اسأل المعلم الآلي» في الصفحة الرئيسية: نفس شكل خانة «قول ملاحظاتك» بلون المعلم الآلي */
+.hask{border-inline-start-color:var(--lv-exam)}
+.hask + .fbk{margin-top:14px}
+.hask .fbk-open .ic{background:var(--violet-soft);color:var(--lv-exam);font-weight:700}
+.hask .fbk-open .go{color:var(--lv-exam)}
+.hask-body{padding:0 16px 16px}
+.hask .tutor-chat{border:0;padding:0;background:none}
+.hask .tutor-log:not(:empty){margin-bottom:10px}
+/* أي عنصر عليه hidden يفضل مستخبي حتى لو له display (زي فورم «قول ملاحظاتك») */
+[hidden]{display:none !important}

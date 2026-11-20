@@ -15,6 +15,16 @@
   <div class="pattern word"><span>المشتقات</span></div>
   <div class="pattern-cap">اختار الدرس، واكتشف القاعدة بنفسك، وبعدين اتدرب.</div></div>
   <div id="list"><p class="note">بيحمّل الدروس…</p></div>
+  <section class="fbk hask" id="hask">
+    <button class="fbk-open" type="button" aria-expanded="false" aria-controls="hask-body"><span class="ic" aria-hidden="true">؟</span><span class="tx"><b>اسأل المعلم الآلي</b><span>اسأل أي سؤال في منهج النحو من غير ما تدخل درس</span></span><span class="go" aria-hidden="true">←</span></button>
+    <div id="hask-body" class="hask-body" hidden>
+      <div class="tutor-chat">
+        <div class="tutor-head"><b>المعلم الآلي</b><span>بيرد على أسئلة النحو بس · أسئلتك بتوصل لمعلمك</span></div>
+        <div class="tutor-log" aria-live="polite"></div>
+        <div class="tutor-row"><textarea class="tutor-input" rows="2" maxlength="600" placeholder="اكتب سؤالك هنا، مثلًا: إيه الفرق بين اسم الفاعل واسم المفعول؟"></textarea><button class="btn" type="button">ابعت</button></div>
+      </div>
+    </div>
+  </section>
   <section class="fbk" id="fbk">
     <button class="fbk-open" type="button" aria-expanded="false" aria-controls="fbk-form"><span class="ic" aria-hidden="true">✉</span><span class="tx"><b>قول ملاحظاتك</b><span>ابعت أي رسالة أو ملحوظة للمعلم</span></span><span class="go" aria-hidden="true">←</span></button>
     <form id="fbk-form" class="fbk-form" hidden>
@@ -36,6 +46,50 @@ fetch("lessons/index.json",{cache:"no-cache"}).then(r=>r.json()).then(c=>{
     ?`<a class="lesson" href="lesson.html?id=${encodeURIComponent(l.id)}"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span><span class="go">ابدأ ←</span></a>`
     :`<div class="lesson soon"><span class="num">${ar(i+1)}</span><span class="tx"><b>${esc(l.title)}</b><span>${esc(l.desc)}</span></span></div>`).join("")}`).join("")}</section>`).join("");
 }).catch(()=>{document.getElementById("list").innerHTML='<p class="note">مقدرناش نحمّل قايمة الدروس. حدّث الصفحة.</p>';});
+
+// «اسأل المعلم الآلي» من الصفحة الرئيسية: سؤال عام في المنهج من غير درس معيّن (نفس دالة /ask اللي جوه الدروس)
+(function(){
+  const box = document.getElementById("hask"), open = box.querySelector(".fbk-open"), body = box.querySelector(".hask-body");
+  const log = box.querySelector(".tutor-log"), input = box.querySelector(".tutor-input"), send = box.querySelector(".tutor-row .btn");
+  const history = [];
+  let busy = false;
+  const bubble = (who, html) => `<div class="tmsg ${who}">${html}</div>`;
+  // اللي بيتبعت مع السؤال عشان المعلم الآلي يعرف إن الطالب مش جوه درس، ويعرف الدروس اللي في المنصة
+  function context(){
+    const titles = [...document.querySelectorAll("#list .lesson b")].map(b => b.textContent).join("، ");
+    return "الطالب بيسأل من الصفحة الرئيسية للمنصة، مش من جوه درس معيّن.\n"
+      + "منهج النحو للصف الثالث الإعدادي، ووحدة المشتقات في المنصة فيها الدروس دي: " + (titles || "المشتقات") + ".\n"
+      + "جاوب على سؤاله في المنهج مباشرة.";
+  }
+  open.addEventListener("click", () => {
+    const show = body.hidden;
+    body.hidden = !show; open.setAttribute("aria-expanded", String(show)); box.classList.toggle("on", show);
+    if (show) input.focus();
+  });
+  async function ask(){
+    const text = input.value.trim();
+    if (!text || busy) return;
+    input.value = "";
+    log.insertAdjacentHTML("beforeend", bubble("me", esc(text)) + bubble("bot wait", "بيكتب…"));
+    busy = true; send.disabled = true;
+    let reply = null;
+    try {
+      const r = await fetch((window.API_BASE || "https://arabic-lessons-nine.vercel.app/api") + "/ask", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lesson: "الصفحة الرئيسية", lessonId: "home", place: "home", device: window.deviceId, context: context(), history: history.slice(-8), message: text }) });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok || !data.reply) throw new Error(data.error || "");
+      reply = data.reply;
+      history.push({ role: "user", text }, { role: "assistant", text: reply });
+    } catch (e) {
+      const msg = e instanceof TypeError ? "" : e.message;
+      log.querySelector(".wait").outerHTML = bubble("bot err", esc(msg || "المعلم الآلي مش متاح دلوقتي، اتأكد من النت وجرّب تاني."));
+    }
+    if (reply != null) log.querySelector(".wait").outerHTML = bubble("bot", esc(reply).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>"));
+    busy = false; send.disabled = false;
+  }
+  send.addEventListener("click", ask);
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); } });
+})();
 
 // «قول ملاحظاتك»: الرسالة بتروح للمعلم وبتظهر في صفحة الإحصائيات
 (function(){
