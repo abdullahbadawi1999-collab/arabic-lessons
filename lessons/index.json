@@ -43,6 +43,18 @@
        "title": "اسم الزمان",
        "desc": "اكتشف القاعدة + ٥ مجموعات تدريب",
        "ready": true
+      },
+      {
+       "id": "ism-alala",
+       "title": "اسم الآلة",
+       "desc": "قريبًا",
+       "ready": false
+      },
+      {
+       "id": "mawatin-aljamal",
+       "title": "كيف أستخرج مواطن الجمال من النص",
+       "desc": "قريبًا",
+       "ready": false
       }
      ]
     }
