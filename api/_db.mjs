@@ -51,7 +51,7 @@ export function ensureTable(){
   return ready;
 }
 
-export const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة", "ism-almakan": "اسم المكان", "ism-alzaman": "اسم الزمان" };
+export const LESSONS = { "al-mizan-alsarfi": "الميزان الصرفي", "ism-alfa3il": "اسم الفاعل", "ism-almaf3ol": "اسم المفعول", "siyagh-almubalagha": "صيغ المبالغة", "ism-almakan": "اسم المكان", "ism-alzaman": "اسم الزمان", "ism-alala": "اسم الآلة" };
 
 // سعر الموديلات بالدولار لكل مليون توكن [اللي بيتبعت، اللي بيتكتب] — التفكير بيتحسب مع اللي بيتكتب
 export const PRICES = { "claude-opus-5-5": [4, 20], "claude-opus-5": [5, 25], "claude-opus-4-8": [5, 25], "claude-sonnet-5-5": [2, 10], "claude-sonnet-5": [2, 10], "claude-haiku-5-5": [0.1, 0.5] };
