@@ -311,7 +311,7 @@ function question(){
 // الخيارات مش بتظهر غير لما الطالب يطلبها، عشان يحاول يحل لوحده الأول
 function revealOptions(){
   const q = Z.list[Z.i].q;
-  document.getElementById("qopts").innerHTML = `<div class="opts enter ${q.options.every(o => o.t.length < 16) ? "two" : ""}">${Z.order.map((k, n) => `<button class="opt" data-qopt="${k}"><span class="n">${ar(n + 1)}</span><span class="t">${md(q.options[k].t)}</span></button>`).join("")}</div>`;
+  document.getElementById("qopts").innerHTML = `<div class="opts enter ${q.options.every(o => o.t.length < 16) ? (q.options.length === 3 ? "three" : "two") : ""}">${Z.order.map((k, n) => `<button class="opt" data-qopt="${k}"><span class="n">${ar(n + 1)}</span><span class="t">${md(q.options[k].t)}</span></button>`).join("")}</div>`;
   app.querySelector(".opt").focus({ preventScroll: true });
 }
 function qAnswer(k){
